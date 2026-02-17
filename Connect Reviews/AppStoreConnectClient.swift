@@ -3,8 +3,26 @@ import Foundation
 @MainActor
 final class AppStoreConnectClient {
     private let baseURL = URL(string: "https://api.appstoreconnect.apple.com/v1/")!
+    private let iTunesLookupURL = URL(string: "https://itunes.apple.com/lookup")!
+    private let iTunesLookupEntity = "desktopSoftware"
+    private let iTunesMainTerritoryCodes = [
+        "US", "CA", "GB",
+        "JP", "AU", "CN", "KR", "BR", "IN", "MX", "CH", "SG",
+        "AT", "BE", "BG", "HR", "CY", "CZ", "DK", "EE", "FI", "FR", "DE", "GR",
+        "HU", "IE", "IT", "LV", "LT", "LU", "MT", "NL", "PL", "PT", "RO", "SK",
+        "SI", "ES", "SE"
+    ]
     private let session: URLSession
     private let credentials: AppStoreConnectCredentials
+#if DEBUG
+    private let enableCustomerReviewsPayloadDebug = false
+    private let customerReviewsDebugAppID: String? = nil
+    private let customerReviewsDebugMaxChars = 10000
+#else
+    private let enableCustomerReviewsPayloadDebug = false
+    private let customerReviewsDebugAppID: String? = nil
+    private let customerReviewsDebugMaxChars = 0
+#endif
 
     init(
         session: URLSession = .shared,
@@ -18,38 +36,124 @@ final class AppStoreConnectClient {
         try await fetchAllPages(path: "apps?limit=200&fields[apps]=name,bundleId")
     }
 
-    func fetchReviews(appID: String) async throws -> [CustomerReviewResource] {
-        try await fetchAllPages(path: "apps/\(appID)/customerReviews?limit=200&sort=-createdDate&fields[customerReviews]=rating,title,body,reviewerNickname,territory,createdDate")
-    }
-
-    func fetchIconURL(bundleID: String) async -> URL? {
-        guard
-            var components = URLComponents(string: "https://itunes.apple.com/lookup")
-        else {
-            return nil
+    func fetchReviewsAndRatings(appID: String) async throws -> (reviews: [CustomerReviewResource], ratings: [TerritoryRating]) {
+        let path = "apps/\(appID)/customerReviews?limit=200&sort=-createdDate"
+        guard let initialURL = URL(string: path, relativeTo: baseURL)?.absoluteURL else {
+            throw AppStoreConnectError.decodingFailed
         }
-        components.queryItems = [
-            URLQueryItem(name: "bundleId", value: bundleID),
-            URLQueryItem(name: "country", value: "us")
-        ]
-        guard let url = components.url else { return nil }
 
-        do {
-            var request = URLRequest(url: url)
-            request.timeoutInterval = 15
-            let (data, response) = try await session.data(for: request)
-            guard
-                let http = response as? HTTPURLResponse,
-                (200...299).contains(http.statusCode)
-            else {
-                return nil
+        var nextURL = initialURL
+        var allReviews: [CustomerReviewResource] = []
+        var ratingsByTerritory: [String: TerritoryRating] = [:]
+        var didDumpPayload = false
+
+        while true {
+            let pageData = try await performData(url: nextURL)
+            if shouldDumpCustomerReviewsPayload(for: appID), !didDumpPayload {
+                didDumpPayload = true
+                debugPrintCustomerReviewsPayload(appID: appID, url: nextURL, data: pageData)
+            }
+            let page = try decodeCustomerReviewsPage(from: pageData)
+            allReviews.append(contentsOf: page.data)
+
+            for include in page.included ?? [] {
+                guard let rating = include.attributes.userRating else { continue }
+                guard let count = rating.ratingCount, count > 0 else { continue }
+                guard let value = rating.value, value > 0 else { continue }
+
+                let territoryCode =
+                    (include.attributes.territory ?? include.attributes.territoryCode ?? "WW")
+                    .uppercased()
+                let incoming = TerritoryRating(
+                    territoryCode: territoryCode,
+                    reviewCount: count,
+                    averageRating: value
+                )
+
+                if let existing = ratingsByTerritory[territoryCode] {
+                    if incoming.reviewCount >= existing.reviewCount {
+                        ratingsByTerritory[territoryCode] = incoming
+                    }
+                } else {
+                    ratingsByTerritory[territoryCode] = incoming
+                }
             }
 
-            let decoded = try JSONDecoder().decode(ITunesLookupResponse.self, from: data)
-            return decoded.results.first?.artworkUrl100 ?? decoded.results.first?.artworkUrl512
-        } catch {
-            return nil
+            guard let next = page.links.next else { break }
+            guard let resolved = URL(string: next, relativeTo: baseURL)?.absoluteURL else { break }
+            nextURL = resolved
         }
+
+        let ratings = ratingsByTerritory.values.sorted { $0.territoryCode < $1.territoryCode }
+        return (reviews: allReviews, ratings: ratings)
+    }
+
+    func fetchAppStoreVersions(appID: String) async throws -> [AppStoreVersionResource] {
+        try await fetchAllPages(path: "apps/\(appID)/appStoreVersions?limit=200&fields[appStoreVersions]=appStoreState")
+    }
+
+    func fetchITunesMetadata(
+        appID: String,
+        bundleID: String,
+        countryCode: String = "us"
+    ) async -> ITunesMetadataResult? {
+        await fetchITunesLookupMetadata(appID: appID, bundleID: bundleID, countryCode: countryCode)
+    }
+
+    func fetchITunesMetadataAcrossMainTerritories(
+        appID: String,
+        bundleID: String
+    ) async -> ITunesMetadataResult? {
+        var iconURL: URL?
+        var totalCount = 0
+        var weightedSum = 0.0
+
+        for territoryCode in iTunesMainTerritoryCodes {
+            guard
+                let metadata = await fetchITunesLookupMetadata(
+                    appID: appID,
+                    bundleID: bundleID,
+                    countryCode: territoryCode.lowercased()
+                )
+            else {
+                continue
+            }
+
+            if iconURL == nil {
+                iconURL = metadata.iconURL
+            }
+
+            guard
+                let count = metadata.userRatingCount,
+                count > 0,
+                let average = metadata.averageUserRating,
+                average > 0
+            else {
+                continue
+            }
+
+            totalCount += count
+            weightedSum += Double(count) * average
+        }
+
+        if totalCount > 0 {
+            return ITunesMetadataResult(
+                iconURL: iconURL,
+                averageUserRating: weightedSum / Double(totalCount),
+                userRatingCount: totalCount
+            )
+        }
+
+        if let iconURL {
+            return ITunesMetadataResult(iconURL: iconURL, averageUserRating: nil, userRatingCount: nil)
+        }
+
+        return await fetchITunesLookupMetadata(appID: appID, bundleID: bundleID, countryCode: "us")
+    }
+
+    func fetchIconURL(appID: String, bundleID: String) async -> URL? {
+        let result = await fetchITunesMetadata(appID: appID, bundleID: bundleID)
+        return result?.iconURL
     }
 
     private func fetchAllPages<T: Decodable>(path: String) async throws -> [T] {
@@ -76,6 +180,17 @@ final class AppStoreConnectClient {
     }
 
     private func perform<T: Decodable>(url: URL) async throws -> T {
+        let data = try await performData(url: url)
+        do {
+            let decoder = JSONDecoder()
+            decoder.dateDecodingStrategy = .iso8601
+            return try decoder.decode(T.self, from: data)
+        } catch {
+            throw AppStoreConnectError.decodingFailed
+        }
+    }
+
+    private func performData(url: URL) async throws -> Data {
         let jwt = try JWTSigner.makeToken(credentials: credentials)
         var request = URLRequest(url: url)
         request.setValue("Bearer \(jwt)", forHTTPHeaderField: "Authorization")
@@ -91,14 +206,88 @@ final class AppStoreConnectClient {
             throw AppStoreConnectError.badResponse(statusCode: httpResponse.statusCode, body: body)
         }
 
+        return data
+    }
+
+    private func decodeCustomerReviewsPage(from data: Data) throws -> CustomerReviewsPage {
         do {
             let decoder = JSONDecoder()
             decoder.dateDecodingStrategy = .iso8601
-            return try decoder.decode(T.self, from: data)
+            return try decoder.decode(CustomerReviewsPage.self, from: data)
         } catch {
             throw AppStoreConnectError.decodingFailed
         }
     }
+
+    private func shouldDumpCustomerReviewsPayload(for appID: String) -> Bool {
+        guard enableCustomerReviewsPayloadDebug else { return false }
+        guard let customerReviewsDebugAppID else { return true }
+        return customerReviewsDebugAppID == appID
+    }
+
+    private func debugPrintCustomerReviewsPayload(appID: String, url: URL, data: Data) {
+        let rawBody = String(data: data, encoding: .utf8) ?? "<non-utf8>"
+        let snippet = String(rawBody.prefix(customerReviewsDebugMaxChars))
+        print("[ASC CustomerReviews Debug] appID=\(appID) url=\(url.absoluteString)")
+        print("[ASC CustomerReviews Debug] body:\n\(snippet)")
+        if rawBody.count > snippet.count {
+            print("[ASC CustomerReviews Debug] body truncated at \(snippet.count) chars")
+        }
+    }
+
+    private func fetchITunesLookupMetadata(
+        appID: String,
+        bundleID: String,
+        countryCode: String
+    ) async -> ITunesMetadataResult? {
+        let queryVariants: [(name: String, items: [URLQueryItem])] = [
+            (
+                "id",
+                [
+                    URLQueryItem(name: "id", value: appID),
+                    URLQueryItem(name: "country", value: countryCode)
+                ]
+            ),
+            (
+                "bundleId",
+                [
+                    URLQueryItem(name: "bundleId", value: bundleID),
+                    URLQueryItem(name: "country", value: countryCode)
+                ]
+            )
+        ]
+
+        for query in queryVariants {
+            var components = URLComponents(url: iTunesLookupURL, resolvingAgainstBaseURL: false)
+            components?.queryItems = query.items + [
+                URLQueryItem(name: "entity", value: iTunesLookupEntity)
+            ]
+            guard let url = components?.url else { continue }
+
+            do {
+                var request = URLRequest(url: url)
+                request.timeoutInterval = 20
+                let (data, response) = try await session.data(for: request)
+                guard
+                    let http = response as? HTTPURLResponse,
+                    (200...299).contains(http.statusCode)
+                else {
+                    continue
+                }
+                let decoded = try JSONDecoder().decode(ITunesLookupResponse.self, from: data)
+                guard let app = decoded.results.first else { continue }
+                return ITunesMetadataResult(
+                    iconURL: app.artworkUrl100 ?? app.artworkUrl512,
+                    averageUserRating: app.averageUserRating,
+                    userRatingCount: app.userRatingCount
+                )
+            } catch {
+                continue
+            }
+        }
+        return nil
+    }
+
 }
 
 private struct ASCLinks: Decodable {
@@ -108,6 +297,53 @@ private struct ASCLinks: Decodable {
 private struct ASCListResponse<T: Decodable>: Decodable {
     let data: [T]
     let links: ASCLinks
+}
+
+private struct CustomerReviewsPage: Decodable {
+    let data: [CustomerReviewResource]
+    let included: [CustomerReviewsIncludedResource]?
+    let links: ASCLinks
+}
+
+private struct CustomerReviewsIncludedResource: Decodable {
+    let attributes: Attributes
+
+    struct Attributes: Decodable {
+        let territory: String?
+        let territoryCode: String?
+        let userRating: UserRating?
+
+        struct UserRating: Decodable {
+            let ratingCount: Int?
+            let value: Double?
+
+            private enum CodingKeys: String, CodingKey {
+                case ratingCount
+                case value
+            }
+
+            init(from decoder: Decoder) throws {
+                let container = try decoder.container(keyedBy: CodingKeys.self)
+                ratingCount = container.decodeLossyInt(forKey: .ratingCount)
+                value = container.decodeLossyDouble(forKey: .value)
+            }
+        }
+
+        private enum CodingKeys: String, CodingKey {
+            case territory
+            case territoryCode
+            case userRating
+        }
+
+        init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            territory =
+                try container.decodeIfPresent(String.self, forKey: .territory) ??
+                container.decodeLossyString(forKey: .territoryCode)
+            territoryCode = container.decodeLossyString(forKey: .territoryCode)
+            userRating = try container.decodeIfPresent(UserRating.self, forKey: .userRating)
+        }
+    }
 }
 
 struct AppResource: Decodable {
@@ -131,6 +367,37 @@ struct CustomerReviewResource: Decodable {
         let reviewerNickname: String?
         let territory: String?
         let createdDate: Date?
+
+        private enum CodingKeys: String, CodingKey {
+            case rating
+            case title
+            case body
+            case reviewerNickname
+            case territory
+            case territoryCode
+            case createdDate
+        }
+
+        init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            rating = container.decodeLossyInt(forKey: .rating)
+            title = try container.decodeIfPresent(String.self, forKey: .title)
+            body = try container.decodeIfPresent(String.self, forKey: .body)
+            reviewerNickname = try container.decodeIfPresent(String.self, forKey: .reviewerNickname)
+            territory =
+                try container.decodeIfPresent(String.self, forKey: .territory) ??
+                container.decodeLossyString(forKey: .territoryCode)
+            createdDate = try container.decodeIfPresent(Date.self, forKey: .createdDate)
+        }
+    }
+}
+
+struct AppStoreVersionResource: Decodable {
+    let id: String
+    let attributes: Attributes
+
+    struct Attributes: Decodable {
+        let appStoreState: String?
     }
 }
 
@@ -141,4 +408,65 @@ private struct ITunesLookupResponse: Decodable {
 private struct ITunesAppResult: Decodable {
     let artworkUrl100: URL?
     let artworkUrl512: URL?
+    let averageUserRating: Double?
+    let userRatingCount: Int?
+
+    private enum CodingKeys: String, CodingKey {
+        case artworkUrl100
+        case artworkUrl512
+        case averageUserRating
+        case userRatingCount
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        artworkUrl100 = try container.decodeIfPresent(URL.self, forKey: .artworkUrl100)
+        artworkUrl512 = try container.decodeIfPresent(URL.self, forKey: .artworkUrl512)
+        averageUserRating = container.decodeLossyDouble(forKey: .averageUserRating)
+        userRatingCount = container.decodeLossyInt(forKey: .userRatingCount)
+    }
+}
+
+struct ITunesMetadataResult {
+    let iconURL: URL?
+    let averageUserRating: Double?
+    let userRatingCount: Int?
+}
+
+private extension KeyedDecodingContainer {
+    func decodeLossyInt(forKey key: Key) -> Int? {
+        if let intValue = try? decodeIfPresent(Int.self, forKey: key) {
+            return intValue
+        }
+        if let stringValue = try? decodeIfPresent(String.self, forKey: key) {
+            return Int(stringValue)
+        }
+        return nil
+    }
+
+    func decodeLossyDouble(forKey key: Key) -> Double? {
+        if let doubleValue = try? decodeIfPresent(Double.self, forKey: key) {
+            return doubleValue
+        }
+        if let intValue = try? decodeIfPresent(Int.self, forKey: key) {
+            return Double(intValue)
+        }
+        if let stringValue = try? decodeIfPresent(String.self, forKey: key) {
+            return Double(stringValue)
+        }
+        return nil
+    }
+
+    func decodeLossyString(forKey key: Key) -> String? {
+        if let stringValue = try? decodeIfPresent(String.self, forKey: key) {
+            return stringValue
+        }
+        if let intValue = try? decodeIfPresent(Int.self, forKey: key) {
+            return String(intValue)
+        }
+        if let doubleValue = try? decodeIfPresent(Double.self, forKey: key) {
+            return String(doubleValue)
+        }
+        return nil
+    }
 }

@@ -78,6 +78,12 @@ struct ContentView: View {
                 selectedAppID = store.apps.first?.id
             }
         }
+        .onChange(of: store.apps) { _ in
+            if let selectedAppID, store.apps.contains(where: { $0.id == selectedAppID }) {
+                return
+            }
+            self.selectedAppID = store.apps.first?.id
+        }
     }
 }
 
@@ -101,13 +107,38 @@ private struct AppDetailView: View {
                     }
                 }
 
-                GroupBox("Overall rating from reviews") {
-                    HStack {
-                        Text("Count: \(app.reviewCount)")
-                        Spacer()
-                        Text("Average: \(formatRating(app.averageRating))")
+                GroupBox("Overall rating (all ratings)") {
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Text(app.hasAllRatingsCoverage ? "Total ratings: \(app.totalRatingsCount)" : "Total ratings: Unavailable")
+                            Spacer()
+                            Text("Average: \(formatRating(app.averageRating))")
+                        }
+                        .font(.headline)
+
+                        Text("Ratings from reviews: \(app.ratingsFromReviewsCount)")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+
+                        Text("Ratings without review: \(formatRatingsWithoutReview(app.ratingsWithoutReviewCount))")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+
+                        Text("Text reviews: \(app.textReviewCount)")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
                     }
-                    .font(.headline)
+                    .padding(.top, 4)
+                }
+
+                GroupBox("App Store status") {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Primary: \(displayState(app.primaryAppStoreState))")
+                            .font(.headline)
+                        Text("All states: \(app.appStoreStates.isEmpty ? "N/A" : app.appStoreStates.joined(separator: ", "))")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
                     .padding(.top, 4)
                 }
 
@@ -191,6 +222,20 @@ private struct AppDetailView: View {
     private func formatRating(_ rating: Double?) -> String {
         guard let rating else { return "N/A" }
         return String(format: "%.2f", rating)
+    }
+
+    private func formatRatingsWithoutReview(_ count: Int?) -> String {
+        guard let count else { return "Unavailable" }
+        return String(count)
+    }
+
+    private func displayState(_ state: String?) -> String {
+        guard let state, !state.isEmpty else { return "N/A" }
+        return state
+            .lowercased()
+            .split(separator: "_")
+            .map { $0.capitalized }
+            .joined(separator: " ")
     }
 }
 

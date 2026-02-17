@@ -4,9 +4,15 @@ struct ConnectApp: Identifiable, Hashable {
     let id: String
     let name: String
     let bundleID: String
+    let appStoreStates: [String]
+    let primaryAppStoreState: String?
     let iconURL: URL?
     let ratingsByTerritory: [TerritoryRating]
-    let reviewCount: Int
+    let hasAllRatingsCoverage: Bool
+    let totalRatingsCount: Int
+    let ratingsFromReviewsCount: Int
+    let ratingsWithoutReviewCount: Int?
+    let textReviewCount: Int
     let averageRating: Double?
     let reviews: [AppReview]
 }
