@@ -4,6 +4,7 @@ import Combine
 @MainActor
 final class ConnectStore: ObservableObject {
     @Published private(set) var apps: [ConnectApp] = []
+    @Published private(set) var vendorDisplayName = "Apps"
     @Published private(set) var isLoading = false
     @Published var errorMessage: String?
 
@@ -15,6 +16,7 @@ final class ConnectStore: ObservableObject {
             let credentials = try CredentialsLoader.load()
             let client = AppStoreConnectClient(credentials: credentials)
             let appResources = try await client.fetchApps()
+            async let vendorNameTask = resolveVendorName(from: appResources, client: client)
 
             let loadedApps = try await withThrowingTaskGroup(of: ConnectApp?.self) { group in
                 for app in appResources {
@@ -56,12 +58,26 @@ final class ConnectStore: ObservableObject {
             }
 
             apps = loadedApps
+            vendorDisplayName = await vendorNameTask
         } catch {
             apps = []
+            vendorDisplayName = "Apps"
             errorMessage = error.localizedDescription
         }
 
         isLoading = false
+    }
+
+    private func resolveVendorName(
+        from appResources: [AppResource],
+        client: AppStoreConnectClient
+    ) async -> String {
+        guard let app = appResources.first else { return "Apps" }
+        guard let vendorName = await client.fetchVendorName(appID: app.id, bundleID: app.attributes.bundleId) else {
+            return "Apps"
+        }
+        let trimmed = vendorName.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? "Apps" : trimmed
     }
 
     private static func mapApp(

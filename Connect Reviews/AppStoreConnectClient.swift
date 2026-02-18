@@ -100,11 +100,27 @@ final class AppStoreConnectClient {
         await fetchITunesLookupMetadata(appID: appID, bundleID: bundleID, countryCode: countryCode)
     }
 
+    func fetchVendorName(appID: String, bundleID: String) async -> String? {
+        for territoryCode in iTunesMainTerritoryCodes {
+            if let sellerName = await fetchITunesLookupMetadata(
+                appID: appID,
+                bundleID: bundleID,
+                countryCode: territoryCode.lowercased()
+            )?.sellerName,
+                !sellerName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            {
+                return sellerName
+            }
+        }
+        return nil
+    }
+
     func fetchITunesMetadataAcrossMainTerritories(
         appID: String,
         bundleID: String
     ) async -> ITunesMetadataResult? {
         var iconURL: URL?
+        var sellerName: String?
         var totalCount = 0
         var weightedSum = 0.0
 
@@ -121,6 +137,9 @@ final class AppStoreConnectClient {
 
             if iconURL == nil {
                 iconURL = metadata.iconURL
+            }
+            if sellerName == nil, let metadataSellerName = metadata.sellerName, !metadataSellerName.isEmpty {
+                sellerName = metadataSellerName
             }
 
             guard
@@ -140,12 +159,18 @@ final class AppStoreConnectClient {
             return ITunesMetadataResult(
                 iconURL: iconURL,
                 averageUserRating: weightedSum / Double(totalCount),
-                userRatingCount: totalCount
+                userRatingCount: totalCount,
+                sellerName: sellerName
             )
         }
 
         if let iconURL {
-            return ITunesMetadataResult(iconURL: iconURL, averageUserRating: nil, userRatingCount: nil)
+            return ITunesMetadataResult(
+                iconURL: iconURL,
+                averageUserRating: nil,
+                userRatingCount: nil,
+                sellerName: sellerName
+            )
         }
 
         return await fetchITunesLookupMetadata(appID: appID, bundleID: bundleID, countryCode: "us")
@@ -279,7 +304,8 @@ final class AppStoreConnectClient {
                 return ITunesMetadataResult(
                     iconURL: app.artworkUrl100 ?? app.artworkUrl512,
                     averageUserRating: app.averageUserRating,
-                    userRatingCount: app.userRatingCount
+                    userRatingCount: app.userRatingCount,
+                    sellerName: app.sellerName
                 )
             } catch {
                 continue
@@ -410,12 +436,14 @@ private struct ITunesAppResult: Decodable {
     let artworkUrl512: URL?
     let averageUserRating: Double?
     let userRatingCount: Int?
+    let sellerName: String?
 
     private enum CodingKeys: String, CodingKey {
         case artworkUrl100
         case artworkUrl512
         case averageUserRating
         case userRatingCount
+        case sellerName
     }
 
     init(from decoder: Decoder) throws {
@@ -424,6 +452,7 @@ private struct ITunesAppResult: Decodable {
         artworkUrl512 = try container.decodeIfPresent(URL.self, forKey: .artworkUrl512)
         averageUserRating = container.decodeLossyDouble(forKey: .averageUserRating)
         userRatingCount = container.decodeLossyInt(forKey: .userRatingCount)
+        sellerName = try container.decodeIfPresent(String.self, forKey: .sellerName)
     }
 }
 
@@ -431,6 +460,7 @@ struct ITunesMetadataResult {
     let iconURL: URL?
     let averageUserRating: Double?
     let userRatingCount: Int?
+    let sellerName: String?
 }
 
 private extension KeyedDecodingContainer {
