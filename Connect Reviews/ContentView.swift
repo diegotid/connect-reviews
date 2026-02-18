@@ -6,6 +6,8 @@
 //
 
 import SwiftUI
+import AppKit
+import Combine
 
 struct ContentView: View {
     @StateObject private var store = ConnectStore()
@@ -18,20 +20,27 @@ struct ContentView: View {
 
     var body: some View {
         NavigationSplitView {
-            List(store.apps, selection: $selectedAppID) { app in
-                HStack(spacing: 12) {
-                    AppIconView(url: app.iconURL, size: 28)
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(app.name)
-                            .font(.headline)
-                        Text(app.bundleID)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+            VStack(spacing: 0) {
+                SidebarHeaderView(
+                    title: store.vendorDisplayName,
+                    subtitle: "Ready for Sale"
+                )
+
+                List(store.apps, selection: $selectedAppID) { app in
+                    HStack(spacing: 12) {
+                        AppIconView(url: app.iconURL, size: 28)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(app.name)
+                                .font(.headline)
+                            Text(app.bundleID)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
                     }
+                    .tag(app.id)
                 }
-                .tag(app.id)
             }
-            .navigationTitle("Apps")
+            .navigationTitle("")
         } detail: {
             Group {
                 if store.isLoading {
@@ -91,13 +100,35 @@ struct ContentView: View {
     ContentView()
 }
 
+private struct SidebarHeaderView: View {
+    let title: String
+    let subtitle: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(title)
+                .font(.title3.weight(.semibold))
+                .lineLimit(2)
+            Text(subtitle)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 12)
+        .padding(.top, 8)
+        .padding(.bottom, 6)
+    }
+}
+
 private struct AppDetailView: View {
     let app: ConnectApp
+    private let reviewStarSize: CGFloat = 16
+    private let summaryStarScale: CGFloat = 1.5
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                HStack(spacing: 14) {
+                HStack(alignment: .top, spacing: 14) {
                     AppIconView(url: app.iconURL, size: 64)
                     VStack(alignment: .leading, spacing: 4) {
                         Text(app.name)
@@ -105,65 +136,11 @@ private struct AppDetailView: View {
                         Text(app.bundleID)
                             .foregroundStyle(.secondary)
                     }
-                }
-
-                GroupBox("Overall rating (all ratings)") {
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack {
-                            Text(app.hasAllRatingsCoverage ? "Total ratings: \(app.totalRatingsCount)" : "Total ratings: Unavailable")
-                            Spacer()
-                            Text("Average: \(formatRating(app.averageRating))")
-                        }
-                        .font(.headline)
-
-                        Text("Ratings from reviews: \(app.ratingsFromReviewsCount)")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-
-                        Text("Ratings without review: \(formatRatingsWithoutReview(app.ratingsWithoutReviewCount))")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-
-                        Text("Text reviews: \(app.textReviewCount)")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                    }
-                    .padding(.top, 4)
-                }
-
-                GroupBox("App Store status") {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Primary: \(displayState(app.primaryAppStoreState))")
-                            .font(.headline)
-                        Text("All states: \(app.appStoreStates.isEmpty ? "N/A" : app.appStoreStates.joined(separator: ", "))")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                    }
-                    .padding(.top, 4)
-                }
-
-                GroupBox("Ratings by country/region") {
-                    if app.ratingsByTerritory.isEmpty {
-                        Text("No ratings available.")
-                            .foregroundStyle(.secondary)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(.vertical, 8)
-                    } else {
-                        VStack(spacing: 8) {
-                            ForEach(app.ratingsByTerritory) { entry in
-                                HStack {
-                                    Text(entry.territoryCode)
-                                        .frame(width: 80, alignment: .leading)
-                                        .font(.system(.body, design: .monospaced))
-                                    Text("Count: \(entry.reviewCount)")
-                                    Spacer()
-                                    Text("Avg: \(formatRating(entry.averageRating))")
-                                }
-                                .padding(.vertical, 2)
-                            }
-                        }
-                        .padding(.vertical, 6)
-                    }
+                    Spacer(minLength: 12)
+                    AverageRatingIndicatorView(
+                        rating: app.averageRating,
+                        starSize: reviewStarSize * summaryStarScale
+                    )
                 }
 
                 GroupBox("Reviews") {
@@ -177,8 +154,7 @@ private struct AppDetailView: View {
                             ForEach(app.reviews) { review in
                                 VStack(alignment: .leading, spacing: 5) {
                                     HStack {
-                                        Text(String(repeating: "★", count: max(review.rating, 0)))
-                                            .foregroundStyle(.yellow)
+                                        StarRatingView(rating: Double(review.rating), size: reviewStarSize)
                                         Text("(\(review.rating))")
                                             .foregroundStyle(.secondary)
                                         Text(review.territoryCode)
@@ -218,45 +194,77 @@ private struct AppDetailView: View {
             .padding(20)
         }
     }
+}
 
-    private func formatRating(_ rating: Double?) -> String {
-        guard let rating else { return "N/A" }
-        return String(format: "%.2f", rating)
+private struct AverageRatingIndicatorView: View {
+    let rating: Double?
+    let starSize: CGFloat
+
+    init(rating: Double?, starSize: CGFloat = 24) {
+        self.rating = rating
+        self.starSize = starSize
     }
 
-    private func formatRatingsWithoutReview(_ count: Int?) -> String {
-        guard let count else { return "Unavailable" }
-        return String(count)
+    var body: some View {
+        VStack(alignment: .trailing, spacing: 4) {
+            StarRatingView(rating: rating, size: starSize)
+
+            Text(rating.map { String(format: "%.2f", $0) } ?? "N/A")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity, alignment: .trailing)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Average rating")
+        .accessibilityValue(rating.map { String(format: "%.2f out of 5", $0) } ?? "Unavailable")
+    }
+}
+
+private struct StarRatingView: View {
+    let rating: Double?
+    let size: CGFloat
+
+    private var clampedRating: Double {
+        min(max(rating ?? 0, 0), 5)
     }
 
-    private func displayState(_ state: String?) -> String {
-        guard let state, !state.isEmpty else { return "N/A" }
-        return state
-            .lowercased()
-            .split(separator: "_")
-            .map { $0.capitalized }
-            .joined(separator: " ")
+    private func starValue(at index: Int) -> Double {
+        min(max(clampedRating - Double(index), 0), 1)
+    }
+
+    var body: some View {
+        HStack(spacing: 2) {
+            ForEach(0..<5, id: \.self) { index in
+                let value = starValue(at: index)
+                ZStack {
+                    Image(systemName: "star.fill")
+                        .foregroundStyle(.gray.opacity(0.2))
+                    Image(systemName: "star.fill")
+                        .foregroundStyle(.yellow.opacity(value))
+                }
+            }
+        }
+        .font(.system(size: size, weight: .semibold))
     }
 }
 
 private struct AppIconView: View {
     let url: URL?
     let size: CGFloat
+    @StateObject private var loader = AppIconLoader()
 
     var body: some View {
         Group {
-            if let url {
-                AsyncImage(url: url) { image in
-                    image
-                        .resizable()
-                        .scaledToFill()
-                } placeholder: {
-                    ZStack {
-                        RoundedRectangle(cornerRadius: size * 0.22)
-                            .fill(.quinary)
-                        ProgressView()
-                            .controlSize(.small)
-                    }
+            if let image = loader.image {
+                Image(nsImage: image)
+                    .resizable()
+                    .scaledToFill()
+            } else if url != nil {
+                ZStack {
+                    RoundedRectangle(cornerRadius: size * 0.22)
+                        .fill(.quinary)
+                    ProgressView()
+                        .controlSize(.small)
                 }
             } else {
                 RoundedRectangle(cornerRadius: size * 0.22)
@@ -273,5 +281,121 @@ private struct AppIconView: View {
             RoundedRectangle(cornerRadius: size * 0.22)
                 .strokeBorder(.black.opacity(0.08))
         }
+        .task(id: url) {
+            await loader.load(url: url)
+        }
+    }
+}
+
+@MainActor
+private final class AppIconLoader: ObservableObject {
+    @Published var image: NSImage?
+    private static let cache = NSCache<NSURL, NSImage>()
+
+    func load(url: URL?) async {
+        guard let url else {
+            image = nil
+            return
+        }
+
+        if let cached = Self.cache.object(forKey: url as NSURL) {
+            image = cached
+            return
+        }
+
+        image = nil
+
+        do {
+            let (data, response) = try await URLSession.shared.data(from: url)
+            guard !Task.isCancelled else { return }
+            guard
+                let http = response as? HTTPURLResponse,
+                (200...299).contains(http.statusCode),
+                let decoded = NSImage(data: data)
+            else {
+                image = nil
+                return
+            }
+
+            let processed = decoded.croppingTransparentPadding() ?? decoded
+            Self.cache.setObject(processed, forKey: url as NSURL)
+            image = processed
+        } catch {
+            image = nil
+        }
+    }
+}
+
+private extension NSImage {
+    func croppingTransparentPadding(alphaThreshold: UInt8 = 2) -> NSImage? {
+        guard let cgImage = cgImage(forProposedRect: nil, context: nil, hints: nil) else { return nil }
+        guard let cropped = cgImage.croppingTransparentPadding(alphaThreshold: alphaThreshold) else { return nil }
+        return NSImage(
+            cgImage: cropped,
+            size: NSSize(width: cropped.width, height: cropped.height)
+        )
+    }
+}
+
+private extension CGImage {
+    func croppingTransparentPadding(alphaThreshold: UInt8) -> CGImage? {
+        let width = self.width
+        let height = self.height
+        guard width > 0, height > 0 else { return self }
+
+        let bytesPerPixel = 4
+        let bytesPerRow = width * bytesPerPixel
+        var pixels = [UInt8](repeating: 0, count: height * bytesPerRow)
+        let colorSpace = CGColorSpaceCreateDeviceRGB()
+        let bitmapInfo = CGBitmapInfo.byteOrder32Big.rawValue | CGImageAlphaInfo.premultipliedLast.rawValue
+
+        guard
+            let context = CGContext(
+                data: &pixels,
+                width: width,
+                height: height,
+                bitsPerComponent: 8,
+                bytesPerRow: bytesPerRow,
+                space: colorSpace,
+                bitmapInfo: bitmapInfo
+            )
+        else {
+            return self
+        }
+
+        context.draw(self, in: CGRect(x: 0, y: 0, width: width, height: height))
+
+        var minX = width
+        var minY = height
+        var maxX = -1
+        var maxY = -1
+
+        for y in 0..<height {
+            let rowOffset = y * bytesPerRow
+            for x in 0..<width {
+                let alpha = pixels[rowOffset + (x * bytesPerPixel) + 3]
+                if alpha > alphaThreshold {
+                    minX = min(minX, x)
+                    minY = min(minY, y)
+                    maxX = max(maxX, x)
+                    maxY = max(maxY, y)
+                }
+            }
+        }
+
+        guard maxX >= minX, maxY >= minY else { return self }
+
+        let cropRect = CGRect(
+            x: minX,
+            y: minY,
+            width: (maxX - minX + 1),
+            height: (maxY - minY + 1)
+        )
+
+        if Int(cropRect.width) == width && Int(cropRect.height) == height {
+            return self
+        }
+
+        return cropping(to: cropRect) ?? self
     }
 }
