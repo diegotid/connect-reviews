@@ -17,12 +17,6 @@ struct AppDetail: View {
             VStack(alignment: .leading, spacing: 20) {
                 HStack(alignment: .top, spacing: 14) {
                     AppIcon(url: app.iconURL, size: 64)
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(app.name)
-                            .font(.title2.bold())
-                        Text(app.bundleID)
-                            .foregroundStyle(.secondary)
-                    }
                     Spacer(minLength: 12)
                     if let averageRating = app.averageRating {
                         StarRating(
@@ -52,8 +46,8 @@ struct AppDetail: View {
                                         StarRating(rating: Double(review.rating),
                                                    showLabel: false,
                                                    size: reviewStarSize)
-                                        Text(review.territoryCode)
-                                            .font(.system(.caption, design: .monospaced))
+                                        Text(flag(from: review.territoryCode))
+                                            .font(.title)
                                             .foregroundStyle(.secondary)
                                         Spacer()
                                         if let date = review.createdDate {
@@ -62,7 +56,6 @@ struct AppDetail: View {
                                                 .foregroundStyle(.secondary)
                                         }
                                     }
-                                    
                                     if let title = review.title, !title.isEmpty {
                                         Text(title)
                                             .font(.headline)
@@ -86,6 +79,20 @@ struct AppDetail: View {
             }
             .padding(20)
         }
+    }
+
+    private func flag(from territoryCode: String) -> String {
+        let code = territoryCode.uppercased()
+        guard code.count == 2 else { return territoryCode }
+        let base: UInt32 = 127397
+        var scalars = String.UnicodeScalarView()
+        for scalar in code.unicodeScalars {
+            guard scalar.properties.isAlphabetic, let flagScalar = UnicodeScalar(base + scalar.value) else {
+                return territoryCode
+            }
+            scalars.append(flagScalar)
+        }
+        return String(scalars)
     }
 }
 

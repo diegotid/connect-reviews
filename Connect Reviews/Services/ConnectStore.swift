@@ -92,7 +92,7 @@ final class ConnectStore: ObservableObject {
             AppReview(
                 id: review.id,
                 rating: review.attributes.rating ?? 0,
-                territoryCode: review.attributes.territory ?? "N/A",
+                territoryCode: review.attributes.territory.map { String($0.prefix(2)) } ?? "N/A",
                 title: review.attributes.title,
                 body: review.attributes.body,
                 reviewerNickname: review.attributes.reviewerNickname,
