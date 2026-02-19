@@ -60,7 +60,23 @@ final class ConnectStore: ObservableObject {
                         built.append(app)
                     }
                 }
-                return built.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+                return built.sorted { lhs, rhs in
+                    let lhsAverage = lhs.averageRating ?? -1
+                    let rhsAverage = rhs.averageRating ?? -1
+                    if lhsAverage != rhsAverage {
+                        return lhsAverage > rhsAverage
+                    }
+
+                    if lhs.reviews.count != rhs.reviews.count {
+                        return lhs.reviews.count > rhs.reviews.count
+                    }
+
+                    if lhs.totalRatingsCount != rhs.totalRatingsCount {
+                        return lhs.totalRatingsCount > rhs.totalRatingsCount
+                    }
+
+                    return lhs.name.localizedCaseInsensitiveCompare(rhs.name) == .orderedAscending
+                }
             }
 
             apps = loadedApps
