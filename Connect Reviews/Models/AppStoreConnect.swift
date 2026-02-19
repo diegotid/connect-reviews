@@ -46,7 +46,7 @@ enum AppStoreConnectError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .credentialsFileMissing:
-            return "Missing credentials file at Secrets/AppStoreConnectCredentials.plist."
+            return "Missing App Store Connect credentials."
         case let .invalidCredentials(message):
             return message
         case .invalidPrivateKey:

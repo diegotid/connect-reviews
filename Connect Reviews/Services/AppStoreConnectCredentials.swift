@@ -1,49 +1,73 @@
 import Foundation
+import Combine
 
-struct AppStoreConnectCredentials {
+struct AppStoreConnectCredentials: Codable, Equatable {
     let issuerID: String
     let keyID: String
     let privateKeyPEM: String
 }
 
-enum CredentialsLoader {
-    static func load() throws -> AppStoreConnectCredentials {
-        let url =
-            Bundle.main.url(
-                forResource: "AppStoreConnectCredentials",
-                withExtension: "plist",
-                subdirectory: "Secrets"
-            ) ??
-            Bundle.main.url(
-                forResource: "AppStoreConnectCredentials",
-                withExtension: "plist"
-            )
+@MainActor
+final class CredentialsStore: ObservableObject {
+    @Published private(set) var credentials: AppStoreConnectCredentials?
+    @Published var isPresentingEditor = false
 
-        guard let url else {
-            throw AppStoreConnectError.credentialsFileMissing
+    var hasCredentials: Bool { credentials != nil }
+
+    private let defaults: UserDefaults
+    private static let storageKey = "app_store_connect_credentials_v1"
+
+    init(defaults: UserDefaults = .standard) {
+        self.defaults = defaults
+        self.credentials = Self.load(from: defaults)
+    }
+
+    func beginEditingCredentials() {
+        isPresentingEditor = true
+    }
+
+    func save(
+        issuerID: String,
+        keyID: String,
+        privateKeyPEM: String
+    ) throws {
+        let cleanIssuerID = issuerID.trimmingCharacters(in: .whitespacesAndNewlines)
+        let cleanKeyID = keyID.trimmingCharacters(in: .whitespacesAndNewlines)
+        let cleanPrivateKey = privateKeyPEM
+            .replacingOccurrences(of: "\\n", with: "\n")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+
+        guard !cleanIssuerID.isEmpty else {
+            throw AppStoreConnectError.invalidCredentials("Issuer ID is required.")
+        }
+        guard !cleanKeyID.isEmpty else {
+            throw AppStoreConnectError.invalidCredentials("Key ID is required.")
+        }
+        guard !cleanPrivateKey.isEmpty else {
+            throw AppStoreConnectError.invalidCredentials("Private key is required.")
         }
 
-        let data = try Data(contentsOf: url)
-        let raw = try PropertyListSerialization.propertyList(from: data, format: nil)
-
-        guard let dict = raw as? [String: Any] else {
-            throw AppStoreConnectError.invalidCredentials("Credentials plist format is invalid.")
-        }
-
-        guard let issuerID = dict["issuerID"] as? String, !issuerID.isEmpty else {
-            throw AppStoreConnectError.invalidCredentials("Missing `issuerID` in credentials plist.")
-        }
-        guard let keyID = dict["keyID"] as? String, !keyID.isEmpty else {
-            throw AppStoreConnectError.invalidCredentials("Missing `keyID` in credentials plist.")
-        }
-        guard let privateKey = dict["privateKey"] as? String, !privateKey.isEmpty else {
-            throw AppStoreConnectError.invalidCredentials("Missing `privateKey` in credentials plist.")
-        }
-
-        return AppStoreConnectCredentials(
-            issuerID: issuerID,
-            keyID: keyID,
-            privateKeyPEM: privateKey
+        let credentials = AppStoreConnectCredentials(
+            issuerID: cleanIssuerID,
+            keyID: cleanKeyID,
+            privateKeyPEM: cleanPrivateKey
         )
+
+        let encoded = try JSONEncoder().encode(credentials)
+        defaults.set(encoded, forKey: Self.storageKey)
+
+        self.credentials = credentials
+        isPresentingEditor = false
+    }
+
+    func clearCredentials() {
+        defaults.removeObject(forKey: Self.storageKey)
+        credentials = nil
+        isPresentingEditor = false
+    }
+
+    private static func load(from defaults: UserDefaults) -> AppStoreConnectCredentials? {
+        guard let data = defaults.data(forKey: Self.storageKey) else { return nil }
+        return try? JSONDecoder().decode(AppStoreConnectCredentials.self, from: data)
     }
 }

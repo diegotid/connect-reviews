@@ -8,12 +8,18 @@ final class ConnectStore: ObservableObject {
     @Published private(set) var isLoading = false
     @Published var errorMessage: String?
 
-    func refresh() async {
+    func clearData() {
+        apps = []
+        vendorDisplayName = "Apps"
+        errorMessage = nil
+        isLoading = false
+    }
+
+    func refresh(using credentials: AppStoreConnectCredentials) async {
         isLoading = true
         errorMessage = nil
 
         do {
-            let credentials = try CredentialsLoader.load()
             let client = AppStoreConnectClient(credentials: credentials)
             let appResources = try await client.fetchApps()
             async let vendorNameTask = resolveVendorName(from: appResources, client: client)
@@ -60,8 +66,7 @@ final class ConnectStore: ObservableObject {
             apps = loadedApps
             vendorDisplayName = await vendorNameTask
         } catch {
-            apps = []
-            vendorDisplayName = "Apps"
+            clearData()
             errorMessage = error.localizedDescription
         }
 
