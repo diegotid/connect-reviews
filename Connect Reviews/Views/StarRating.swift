@@ -55,7 +55,7 @@ struct StarRating: View {
                     Image(systemName: "star.fill")
                         .foregroundStyle(.gray.opacity(0.2))
                     Image(systemName: "star.fill")
-                        .foregroundStyle(.yellow.opacity(value * 0.8))
+                        .foregroundStyle(.yellow.opacity(value * 0.75))
                 }
             }
             .padding(.top, -2)

@@ -6,19 +6,73 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		A1B000000000000000000001 /* Connect Reviews Widget.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = A1B000000000000000000002 /* Connect Reviews Widget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		A1B000000000000000000009 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F162B62A2F42909B00906C4E /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A1B000000000000000000008;
+			remoteInfo = "Connect Reviews Widget";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		A1B000000000000000000007 /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				A1B000000000000000000001 /* Connect Reviews Widget.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		A1B000000000000000000002 /* Connect Reviews Widget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "Connect Reviews Widget.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 		F162B6322F42909B00906C4E /* Connect Reviews.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Connect Reviews.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		F1B8E2362F47BD8C0076BE36 /* Exceptions for "Connect Reviews" folder in "Connect Reviews Widget" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Secrets/AppStoreConnectCredentials.plist,
+			);
+			target = A1B000000000000000000008 /* Connect Reviews Widget */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		A1B000000000000000000003 /* Connect Reviews Widget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "Connect Reviews Widget";
+			sourceTree = "<group>";
+		};
 		F162B6342F42909B00906C4E /* Connect Reviews */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				F1B8E2362F47BD8C0076BE36 /* Exceptions for "Connect Reviews" folder in "Connect Reviews Widget" target */,
+			);
 			path = "Connect Reviews";
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		A1B000000000000000000004 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		F162B62F2F42909B00906C4E /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -32,6 +86,7 @@
 		F162B6292F42909B00906C4E = {
 			isa = PBXGroup;
 			children = (
+				A1B000000000000000000003 /* Connect Reviews Widget */,
 				F162B6342F42909B00906C4E /* Connect Reviews */,
 				F162B6332F42909B00906C4E /* Products */,
 			);
@@ -40,6 +95,7 @@
 		F162B6332F42909B00906C4E /* Products */ = {
 			isa = PBXGroup;
 			children = (
+				A1B000000000000000000002 /* Connect Reviews Widget.appex */,
 				F162B6322F42909B00906C4E /* Connect Reviews.app */,
 			);
 			name = Products;
@@ -48,6 +104,28 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		A1B000000000000000000008 /* Connect Reviews Widget */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A1B00000000000000000000B /* Build configuration list for PBXNativeTarget "Connect Reviews Widget" */;
+			buildPhases = (
+				A1B000000000000000000005 /* Sources */,
+				A1B000000000000000000004 /* Frameworks */,
+				A1B000000000000000000006 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				A1B000000000000000000003 /* Connect Reviews Widget */,
+			);
+			name = "Connect Reviews Widget";
+			packageProductDependencies = (
+			);
+			productName = "Connect Reviews Widget";
+			productReference = A1B000000000000000000002 /* Connect Reviews Widget.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		F162B6312F42909B00906C4E /* Connect Reviews */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = F162B63D2F42909C00906C4E /* Build configuration list for PBXNativeTarget "Connect Reviews" */;
@@ -55,10 +133,12 @@
 				F162B62E2F42909B00906C4E /* Sources */,
 				F162B62F2F42909B00906C4E /* Frameworks */,
 				F162B6302F42909B00906C4E /* Resources */,
+				A1B000000000000000000007 /* Embed App Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				A1B00000000000000000000A /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				F162B6342F42909B00906C4E /* Connect Reviews */,
@@ -80,6 +160,9 @@
 				LastSwiftUpdateCheck = 2630;
 				LastUpgradeCheck = 2630;
 				TargetAttributes = {
+					A1B000000000000000000008 = {
+						CreatedOnToolsVersion = 26.3;
+					};
 					F162B6312F42909B00906C4E = {
 						CreatedOnToolsVersion = 26.3;
 					};
@@ -99,12 +182,20 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
+				A1B000000000000000000008 /* Connect Reviews Widget */,
 				F162B6312F42909B00906C4E /* Connect Reviews */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		A1B000000000000000000006 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		F162B6302F42909B00906C4E /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -115,6 +206,13 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		A1B000000000000000000005 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		F162B62E2F42909B00906C4E /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -124,7 +222,71 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		A1B00000000000000000000A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A1B000000000000000000008 /* Connect Reviews Widget */;
+			targetProxy = A1B000000000000000000009 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		A1B00000000000000000000C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = "Connect Reviews Widget/Connect Reviews Widget.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = F6HFAVTS49;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "Connect Reviews Widget/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 26.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "studio.cuatro.Connect-Reviews.Widget";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		A1B00000000000000000000D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = "Connect Reviews Widget/Connect Reviews Widget.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = F6HFAVTS49;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "Connect Reviews Widget/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 26.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "studio.cuatro.Connect-Reviews.Widget";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
 		F162B63B2F42909C00906C4E /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -314,6 +476,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		A1B00000000000000000000B /* Build configuration list for PBXNativeTarget "Connect Reviews Widget" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A1B00000000000000000000C /* Debug */,
+				A1B00000000000000000000D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		F162B62D2F42909B00906C4E /* Build configuration list for PBXProject "Connect Reviews" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

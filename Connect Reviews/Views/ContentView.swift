@@ -12,10 +12,15 @@ import Combine
 struct ContentView: View {
     @StateObject private var store = ConnectStore()
     @State private var selectedAppID: String?
+    @Environment(\.openURL) private var openURL
 
     private var selectedApp: ConnectApp? {
         guard let selectedAppID else { return nil }
         return store.apps.first(where: { $0.id == selectedAppID })
+    }
+
+    private var displayedApp: ConnectApp? {
+        selectedApp ?? store.apps.first
     }
 
     var body: some View {
@@ -61,16 +66,26 @@ struct ContentView: View {
                             .frame(maxWidth: 560)
                     }
                     .padding()
-                } else if let app = selectedApp {
+                } else if let app = displayedApp {
                     AppDetail(app: app)
-                } else if let firstApp = store.apps.first {
-                    AppDetail(app: firstApp)
                 } else {
                     ContentUnavailableView("No apps found", systemImage: "app.badge")
                 }
             }
-            .navigationTitle(selectedApp?.name ?? "Connect Reviews")
+            .navigationTitle(displayedApp?.name ?? "Connect Reviews")
             .toolbar {
+                ToolbarItem(placement: .automatic) {
+                    Button {
+                        guard let app = displayedApp,
+                              let url = appStoreConnectURL(for: app)
+                        else { return }
+                        openURL(url)
+                    } label: {
+                        Image(systemName: "arrow.up.right.square")
+                    }
+                    .help("Open in App Store Connect")
+                    .disabled(displayedApp == nil)
+                }
                 ToolbarItem(placement: .automatic) {
                     Button {
                         Task { await store.refresh() }
@@ -94,6 +109,10 @@ struct ContentView: View {
             }
             self.selectedAppID = store.apps.first?.id
         }
+    }
+
+    private func appStoreConnectURL(for app: ConnectApp) -> URL? {
+        URL(string: "https://appstoreconnect.apple.com/apps/\(app.id)/appstore")
     }
 }
 

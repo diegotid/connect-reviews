@@ -146,12 +146,24 @@ private extension CGImage {
 
         guard maxX >= minX, maxY >= minY else { return self }
 
-        let cropRect = CGRect(
+        var cropRect = CGRect(
             x: minX,
             y: minY,
             width: (maxX - minX + 1),
             height: (maxY - minY + 1)
         )
+
+        if cropRect.width != cropRect.height {
+            let squareSize = max(cropRect.width, cropRect.height)
+            let midX = cropRect.midX
+            let midY = cropRect.midY
+            cropRect = CGRect(
+                x: midX - squareSize / 2,
+                y: midY - squareSize / 2,
+                width: squareSize,
+                height: squareSize
+            ).intersection(CGRect(x: 0, y: 0, width: width, height: height))
+        }
 
         if Int(cropRect.width) == width && Int(cropRect.height) == height {
             return self
