@@ -208,8 +208,7 @@ struct ConnectReviewsWidgetBundle: WidgetBundle {
 private actor ConnectReviewsWidgetDataLoader {
     func load() async -> ConnectReviewsSidebarWidgetEntry {
         do {
-            let credentials = try WidgetCredentialsLoader.load()
-            let client = WidgetAppStoreConnectClient(credentials: credentials)
+            let client = try WidgetAppStoreConnectClient()
             let appResources = try await client.fetchApps()
 
             let loaded = try await withThrowingTaskGroup(of: LoadedWidgetApp?.self) { group in
@@ -281,6 +280,10 @@ private actor ConnectReviewsWidgetDataLoader {
         guard let url else { return nil }
 
         do {
+            if url.isFileURL {
+                return try Data(contentsOf: url)
+            }
+
             let (data, response) = try await URLSession.shared.data(from: url)
             guard
                 let http = response as? HTTPURLResponse,
@@ -447,26 +450,47 @@ private enum WidgetJWTSigner {
 }
 
 private final class WidgetAppStoreConnectClient {
+    private static let useMockData = true
     private let session: URLSession
-    private let credentials: WidgetAppStoreConnectCredentials
+    private let credentials: WidgetAppStoreConnectCredentials?
 
-    init(session: URLSession = .shared, credentials: WidgetAppStoreConnectCredentials) {
+    init(session: URLSession = .shared) throws {
         self.session = session
-        self.credentials = credentials
+        if Self.useMockData {
+            self.credentials = nil
+        } else {
+            self.credentials = try WidgetCredentialsLoader.load()
+        }
     }
 
     func fetchApps() async throws -> [WidgetAppResource] {
-        try await fetchAllPages(path: "apps?limit=200&fields[apps]=name,bundleId")
+        if Self.useMockData {
+            let page: WidgetASCListResponse<WidgetAppResource> = try decodeMockASCFile(named: "apps")
+            return page.data
+        }
+
+        return try await fetchAllPages(path: "apps?limit=200&fields[apps]=name,bundleId")
     }
 
     func fetchAppStoreVersions(appID: String) async throws -> [WidgetAppStoreVersionResource] {
-        try await fetchAllPages(path: "apps/\(appID)/appStoreVersions?limit=200&fields[appStoreVersions]=appStoreState")
+        if Self.useMockData {
+            let page: WidgetASCListResponse<WidgetAppStoreVersionResource> = try decodeMockASCFile(
+                named: "appStoreVersions_\(appID)"
+            )
+            return page.data
+        }
+
+        return try await fetchAllPages(path: "apps/\(appID)/appStoreVersions?limit=200&fields[appStoreVersions]=appStoreState")
     }
 
     func fetchITunesMetadataAcrossMainTerritories(
         appID: String,
         bundleID: String
     ) async -> WidgetITunesMetadataResult? {
+        if Self.useMockData {
+            return mockITunesMetadata(appID: appID)
+        }
+
         var iconURL: URL?
         var sellerName: String?
         var totalCount = 0
@@ -557,6 +581,9 @@ private final class WidgetAppStoreConnectClient {
     }
 
     private func performData(url: URL) async throws -> Data {
+        guard let credentials else {
+            throw WidgetDataError.invalidCredentials("Missing credentials for non-mock mode.")
+        }
         let jwt = try WidgetJWTSigner.makeToken(credentials: credentials)
         var request = URLRequest(url: url)
         request.setValue("Bearer \(jwt)", forHTTPHeaderField: "Authorization")
@@ -620,6 +647,96 @@ private final class WidgetAppStoreConnectClient {
         }
 
         return nil
+    }
+
+    private func mockITunesMetadata(appID: String) -> WidgetITunesMetadataResult? {
+        guard let decoded = try? decodeMockITunesLookupFile(appID: appID) else { return nil }
+        guard let app = decoded.results.first else { return nil }
+        return WidgetITunesMetadataResult(
+            iconURL: mockIconURL(appID: appID) ?? app.artworkUrl100 ?? app.artworkUrl512,
+            averageUserRating: app.averageUserRating,
+            userRatingCount: app.userRatingCount,
+            sellerName: app.sellerName
+        )
+    }
+
+    private func mockIconURL(appID: String) -> URL? {
+        let fileName: String
+        switch appID {
+        case "6756281636":
+            fileName = "better-1024"
+        case "6473126292":
+            fileName = "tildone-1024"
+        case "6754349400":
+            fileName = "week-1024"
+        default:
+            return nil
+        }
+
+        return findMockResourceURL(
+            name: fileName,
+            ext: "png",
+            subdirectories: ["Mocks/Icons", "Icons", nil]
+        )
+    }
+
+    private func decodeMockASCFile<T: Decodable>(named name: String) throws -> T {
+        guard
+            let url = findMockResourceURL(
+                name: name,
+                ext: "json",
+                subdirectories: ["Mocks/ASC", "ASC", nil]
+            )
+        else {
+            throw WidgetDataError.decodingFailed
+        }
+
+        let data = try Data(contentsOf: url)
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        return try decoder.decode(T.self, from: data)
+    }
+
+    private func decodeMockITunesLookupFile(appID: String) throws -> WidgetITunesLookupResponse {
+        guard
+            let url = findMockResourceURL(
+                name: "lookup_\(appID)",
+                ext: "json",
+                subdirectories: ["Mocks/iTunes", "iTunes", nil]
+            )
+        else {
+            throw WidgetDataError.decodingFailed
+        }
+
+        let data = try Data(contentsOf: url)
+        return try JSONDecoder().decode(WidgetITunesLookupResponse.self, from: data)
+    }
+
+    private func findMockResourceURL(
+        name: String,
+        ext: String,
+        subdirectories: [String?]
+    ) -> URL? {
+        for bundle in candidateBundles() {
+            for subdirectory in subdirectories {
+                if let url = bundle.url(forResource: name, withExtension: ext, subdirectory: subdirectory) {
+                    return url
+                }
+            }
+        }
+        return nil
+    }
+
+    private func candidateBundles() -> [Bundle] {
+        [Bundle.main, hostAppBundle()].compactMap { $0 }
+    }
+
+    private func hostAppBundle() -> Bundle? {
+        let appBundleURL = Bundle.main.bundleURL
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+        return Bundle(url: appBundleURL)
     }
 }
 

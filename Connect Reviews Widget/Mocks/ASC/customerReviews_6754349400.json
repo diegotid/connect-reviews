@@ -1,0 +1,117 @@
+{
+  "data": [
+    {
+      "id": "wn-001",
+      "type": "customerReviews",
+      "attributes": {
+        "rating": 5,
+        "title": "Week number at a glance",
+        "body": "Finally, a clean widget that shows the week number without extra clutter. I can check it at a glance while planning tasks and meetings for the week. It is simple, readable, and exactly what I needed.",
+        "reviewerNickname": "IrisD",
+        "territory": "SE",
+        "createdDate": "2026-02-06T09:33:00Z"
+      }
+    },
+    {
+      "id": "wn-002",
+      "type": "customerReviews",
+      "attributes": {
+        "rating": 4,
+        "title": "Minimal and readable",
+        "body": "It looks great on my desktop and fits nicely with the rest of my setup. I use it constantly for planning work in ISO weeks and quick scheduling checks. The design is minimal but still very readable.",
+        "reviewerNickname": "MarkoB",
+        "territory": "DE",
+        "createdDate": "2026-01-29T13:05:00Z"
+      }
+    },
+    {
+      "id": "wn-003",
+      "type": "customerReviews",
+      "attributes": {
+        "rating": 5,
+        "title": "Perfect for ISO week planning",
+        "body": "My team plans by week number, so this widget saves me from opening the calendar all day. The information is always visible and easy to trust during meetings, which reduces context switching when we are planning deadlines.\n\nWhere it helps me most:\n- Sprint planning and retros\n- Weekly reporting cadence\n- Deadline checks before releases\n\nIt makes weekly planning noticeably faster.",
+        "reviewerNickname": "LenaQ",
+        "territory": "GB",
+        "createdDate": "2026-01-21T07:57:00Z"
+      }
+    },
+    {
+      "id": "wn-004",
+      "type": "customerReviews",
+      "attributes": {
+        "rating": 4,
+        "title": "One job, done well",
+        "body": "No noise and no setup drama, which I appreciate in utility apps. The week number is always visible and appears accurate every time I check it. It does one job and does it well.",
+        "reviewerNickname": "PedroR",
+        "territory": "ES",
+        "createdDate": "2026-01-10T18:44:00Z"
+      }
+    },
+    {
+      "id": "wn-005",
+      "type": "customerReviews",
+      "attributes": {
+        "rating": 3,
+        "title": "Useful, more styles would help",
+        "body": "This is a very helpful widget and it has become part of my regular desktop layout. I would love extra themes and more size presets for different screen arrangements, especially when using multiple desktops. The current version is already useful, reliable, and clear at a glance.",
+        "reviewerNickname": "DanaW",
+        "territory": "US",
+        "createdDate": "2025-12-22T11:30:00Z"
+      }
+    }
+  ],
+  "included": [
+    {
+      "id": "wn-rating-us",
+      "type": "customerReviewResponses",
+      "attributes": {
+        "territory": "US",
+        "territoryCode": "US",
+        "userRating": {
+          "ratingCount": 132,
+          "value": 4.8
+        }
+      }
+    },
+    {
+      "id": "wn-rating-gb",
+      "type": "customerReviewResponses",
+      "attributes": {
+        "territory": "GB",
+        "territoryCode": "GB",
+        "userRating": {
+          "ratingCount": 105,
+          "value": 4.7
+        }
+      }
+    },
+    {
+      "id": "wn-rating-de",
+      "type": "customerReviewResponses",
+      "attributes": {
+        "territory": "DE",
+        "territoryCode": "DE",
+        "userRating": {
+          "ratingCount": 88,
+          "value": 4.6
+        }
+      }
+    },
+    {
+      "id": "wn-rating-es",
+      "type": "customerReviewResponses",
+      "attributes": {
+        "territory": "ES",
+        "territoryCode": "ES",
+        "userRating": {
+          "ratingCount": 67,
+          "value": 4.5
+        }
+      }
+    }
+  ],
+  "links": {
+    "self": "https://api.appstoreconnect.apple.com/v1/apps/6754349400/customerReviews?limit=200&sort=-createdDate"
+  }
+}

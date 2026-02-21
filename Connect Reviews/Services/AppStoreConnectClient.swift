@@ -14,6 +14,7 @@ final class AppStoreConnectClient {
     ]
     private let session: URLSession
     private let credentials: AppStoreConnectCredentials
+    private let useMockData = true
 #if DEBUG
     private let enableCustomerReviewsPayloadDebug = false
     private let customerReviewsDebugAppID: String? = nil
@@ -33,10 +34,45 @@ final class AppStoreConnectClient {
     }
 
     func fetchApps() async throws -> [AppResource] {
-        try await fetchAllPages(path: "apps?limit=200&fields[apps]=name,bundleId")
+        if useMockData {
+            let page: ASCListResponse<AppResource> = try decodeMockASCFile(named: "apps")
+            return page.data
+        }
+        return try await fetchAllPages(path: "apps?limit=200&fields[apps]=name,bundleId")
     }
 
     func fetchReviewsAndRatings(appID: String) async throws -> (reviews: [CustomerReviewResource], ratings: [TerritoryRating]) {
+        if useMockData {
+            let page: CustomerReviewsPage = try decodeMockASCFile(named: "customerReviews_\(appID)")
+            var ratingsByTerritory: [String: TerritoryRating] = [:]
+
+            for include in page.included ?? [] {
+                guard let rating = include.attributes.userRating else { continue }
+                guard let count = rating.ratingCount, count > 0 else { continue }
+                guard let value = rating.value, value > 0 else { continue }
+
+                let territoryCode =
+                    (include.attributes.territory ?? include.attributes.territoryCode ?? "WW")
+                    .uppercased()
+                let incoming = TerritoryRating(
+                    territoryCode: territoryCode,
+                    reviewCount: count,
+                    averageRating: value
+                )
+
+                if let existing = ratingsByTerritory[territoryCode] {
+                    if incoming.reviewCount >= existing.reviewCount {
+                        ratingsByTerritory[territoryCode] = incoming
+                    }
+                } else {
+                    ratingsByTerritory[territoryCode] = incoming
+                }
+            }
+
+            let ratings = ratingsByTerritory.values.sorted { $0.territoryCode < $1.territoryCode }
+            return (reviews: page.data, ratings: ratings)
+        }
+
         let path = "apps/\(appID)/customerReviews?limit=200&sort=-createdDate"
         guard let initialURL = URL(string: path, relativeTo: baseURL)?.absoluteURL else {
             throw AppStoreConnectError.decodingFailed
@@ -89,7 +125,13 @@ final class AppStoreConnectClient {
     }
 
     func fetchAppStoreVersions(appID: String) async throws -> [AppStoreVersionResource] {
-        try await fetchAllPages(path: "apps/\(appID)/appStoreVersions?limit=200&fields[appStoreVersions]=appStoreState")
+        if useMockData {
+            let page: ASCListResponse<AppStoreVersionResource> = try decodeMockASCFile(
+                named: "appStoreVersions_\(appID)"
+            )
+            return page.data
+        }
+        return try await fetchAllPages(path: "apps/\(appID)/appStoreVersions?limit=200&fields[appStoreVersions]=appStoreState")
     }
 
     func fetchITunesMetadata(
@@ -97,10 +139,16 @@ final class AppStoreConnectClient {
         bundleID: String,
         countryCode: String = "us"
     ) async -> ITunesMetadataResult? {
-        await fetchITunesLookupMetadata(appID: appID, bundleID: bundleID, countryCode: countryCode)
+        if useMockData {
+            return mockITunesMetadata(appID: appID, bundleID: bundleID)
+        }
+        return await fetchITunesLookupMetadata(appID: appID, bundleID: bundleID, countryCode: countryCode)
     }
 
     func fetchVendorName(appID: String, bundleID: String) async -> String? {
+        if useMockData {
+            return mockITunesMetadata(appID: appID, bundleID: bundleID)?.sellerName
+        }
         for territoryCode in iTunesMainTerritoryCodes {
             if let sellerName = await fetchITunesLookupMetadata(
                 appID: appID,
@@ -119,6 +167,10 @@ final class AppStoreConnectClient {
         appID: String,
         bundleID: String
     ) async -> ITunesMetadataResult? {
+        if useMockData {
+            return mockITunesMetadata(appID: appID, bundleID: bundleID)
+        }
+
         var iconURL: URL?
         var sellerName: String?
         var totalCount = 0
@@ -312,6 +364,99 @@ final class AppStoreConnectClient {
             }
         }
         return nil
+    }
+
+    private func mockITunesMetadata(appID: String, bundleID: String) -> ITunesMetadataResult? {
+        guard let decoded = try? decodeMockITunesLookupFile(appID: appID) else { return nil }
+        guard let app = decoded.results.first else { return nil }
+        return ITunesMetadataResult(
+            iconURL: mockIconURL(appID: appID) ?? app.artworkUrl100 ?? app.artworkUrl512,
+            averageUserRating: app.averageUserRating,
+            userRatingCount: app.userRatingCount,
+            sellerName: app.sellerName
+        )
+    }
+
+    private func mockIconURL(appID: String) -> URL? {
+        let fileName: String
+        switch appID {
+        case "6756281636":
+            fileName = "better-1024"
+        case "6473126292":
+            fileName = "tildone-1024"
+        case "6754349400":
+            fileName = "week-1024"
+        default:
+            return nil
+        }
+
+        return
+            Bundle.main.url(
+                forResource: fileName,
+                withExtension: "png",
+                subdirectory: "Mocks/Icons"
+            ) ??
+            Bundle.main.url(
+                forResource: fileName,
+                withExtension: "png",
+                subdirectory: "Icons"
+            ) ??
+            Bundle.main.url(
+                forResource: fileName,
+                withExtension: "png"
+            )
+    }
+
+    private func decodeMockASCFile<T: Decodable>(named name: String) throws -> T {
+        let url =
+            Bundle.main.url(
+                forResource: name,
+                withExtension: "json",
+                subdirectory: "Mocks/ASC"
+            ) ??
+            Bundle.main.url(
+                forResource: name,
+                withExtension: "json",
+                subdirectory: "ASC"
+            ) ??
+            Bundle.main.url(
+                forResource: name,
+                withExtension: "json"
+            )
+
+        guard let url else {
+            throw AppStoreConnectError.decodingFailed
+        }
+
+        let data = try Data(contentsOf: url)
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        return try decoder.decode(T.self, from: data)
+    }
+
+    private func decodeMockITunesLookupFile(appID: String) throws -> ITunesLookupResponse {
+        let url =
+            Bundle.main.url(
+                forResource: "lookup_\(appID)",
+                withExtension: "json",
+                subdirectory: "Mocks/iTunes"
+            ) ??
+            Bundle.main.url(
+                forResource: "lookup_\(appID)",
+                withExtension: "json",
+                subdirectory: "iTunes"
+            ) ??
+            Bundle.main.url(
+                forResource: "lookup_\(appID)",
+                withExtension: "json"
+            )
+
+        guard let url else {
+            throw AppStoreConnectError.decodingFailed
+        }
+
+        let data = try Data(contentsOf: url)
+        return try JSONDecoder().decode(ITunesLookupResponse.self, from: data)
     }
 
 }
