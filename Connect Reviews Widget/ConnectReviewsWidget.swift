@@ -7,6 +7,8 @@ import AppKit
 private enum SidebarWidgetConstants {
     static let kind = "ConnectReviewsSidebarWidget"
     static let refreshInterval: TimeInterval = 6 * 60 * 60
+    static let appGroupIdentifier = "group.studio.cuatro.connect"
+    static let credentialsStorageKey = "app_store_connect_credentials_v1"
     static let appStoreConnectBaseURL = URL(string: "https://api.appstoreconnect.apple.com/v1/")!
     static let iTunesLookupURL = URL(string: "https://itunes.apple.com/lookup")!
     static let iTunesLookupEntity = "desktopSoftware"
@@ -308,51 +310,32 @@ private struct WidgetAppStoreConnectCredentials {
 
 private enum WidgetCredentialsLoader {
     static func load() throws -> WidgetAppStoreConnectCredentials {
-        let candidateBundles = [Bundle.main, hostAppBundle()].compactMap { $0 }
-
-        for bundle in candidateBundles {
-            guard let url = credentialsURL(in: bundle) else { continue }
-            return try parseCredentials(at: url)
+        guard let defaults = UserDefaults(suiteName: SidebarWidgetConstants.appGroupIdentifier) else {
+            throw WidgetDataError.invalidCredentials("Unable to access shared app group credentials.")
+        }
+        guard let data = defaults.data(forKey: SidebarWidgetConstants.credentialsStorageKey) else {
+            throw WidgetDataError.credentialsFileMissing
         }
 
-        throw WidgetDataError.credentialsFileMissing
-    }
-
-    private static func credentialsURL(in bundle: Bundle) -> URL? {
-        bundle.url(
-            forResource: "AppStoreConnectCredentials",
-            withExtension: "plist",
-            subdirectory: "Secrets"
-        ) ?? bundle.url(
-            forResource: "AppStoreConnectCredentials",
-            withExtension: "plist"
-        )
-    }
-
-    private static func hostAppBundle() -> Bundle? {
-        let appBundleURL = Bundle.main.bundleURL
-            .deletingLastPathComponent()
-            .deletingLastPathComponent()
-            .deletingLastPathComponent()
-        return Bundle(url: appBundleURL)
-    }
-
-    private static func parseCredentials(at url: URL) throws -> WidgetAppStoreConnectCredentials {
-        let data = try Data(contentsOf: url)
-        let raw = try PropertyListSerialization.propertyList(from: data, format: nil)
-
-        guard let dict = raw as? [String: Any] else {
-            throw WidgetDataError.invalidCredentials("Credentials plist format is invalid.")
+        let decoded: StoredCredentials
+        do {
+            decoded = try JSONDecoder().decode(StoredCredentials.self, from: data)
+        } catch {
+            throw WidgetDataError.invalidCredentials("Saved shared credentials are invalid.")
         }
 
-        guard let issuerID = dict["issuerID"] as? String, !issuerID.isEmpty else {
-            throw WidgetDataError.invalidCredentials("Missing `issuerID` in credentials plist.")
+        let issuerID = decoded.issuerID.trimmingCharacters(in: .whitespacesAndNewlines)
+        let keyID = decoded.keyID.trimmingCharacters(in: .whitespacesAndNewlines)
+        let privateKey = decoded.privateKeyPEM.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        guard !issuerID.isEmpty else {
+            throw WidgetDataError.invalidCredentials("Missing Issuer ID.")
         }
-        guard let keyID = dict["keyID"] as? String, !keyID.isEmpty else {
-            throw WidgetDataError.invalidCredentials("Missing `keyID` in credentials plist.")
+        guard !keyID.isEmpty else {
+            throw WidgetDataError.invalidCredentials("Missing Key ID.")
         }
-        guard let privateKey = dict["privateKey"] as? String, !privateKey.isEmpty else {
-            throw WidgetDataError.invalidCredentials("Missing `privateKey` in credentials plist.")
+        guard !privateKey.isEmpty else {
+            throw WidgetDataError.invalidCredentials("Missing private key.")
         }
 
         return WidgetAppStoreConnectCredentials(
@@ -360,6 +343,12 @@ private enum WidgetCredentialsLoader {
             keyID: keyID,
             privateKeyPEM: privateKey
         )
+    }
+
+    private struct StoredCredentials: Codable {
+        let issuerID: String
+        let keyID: String
+        let privateKeyPEM: String
     }
 }
 
@@ -375,7 +364,7 @@ private enum WidgetDataError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .credentialsFileMissing:
-            return "Missing AppStoreConnectCredentials.plist."
+            return "Open Connect Reviews and add App Store Connect credentials."
         case let .invalidCredentials(message):
             return message
         case .invalidPrivateKey:
