@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		A1B000000000000000000001 /* Connect Reviews Widget.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = A1B000000000000000000002 /* Connect Reviews Widget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		A1B000000000000000000001 /* ConnectReviewsWidget.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = A1B000000000000000000002 /* ConnectReviewsWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -27,7 +27,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
-				A1B000000000000000000001 /* Connect Reviews Widget.appex in Embed App Extensions */,
+				A1B000000000000000000001 /* ConnectReviewsWidget.appex in Embed App Extensions */,
 			);
 			name = "Embed App Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -35,13 +35,26 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		A1B000000000000000000002 /* Connect Reviews Widget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "Connect Reviews Widget.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
+		A1B000000000000000000002 /* ConnectReviewsWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "ConnectReviewsWidget.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 		F162B6322F42909B00906C4E /* Connect Reviews.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Connect Reviews.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		A1B00000000000000000000E /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = A1B000000000000000000008 /* Connect Reviews Widget */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		A1B000000000000000000003 /* Connect Reviews Widget */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				A1B00000000000000000000E /* PBXFileSystemSynchronizedBuildFileExceptionSet */,
+			);
 			path = "Connect Reviews Widget";
 			sourceTree = "<group>";
 		};
@@ -82,7 +95,7 @@
 		F162B6332F42909B00906C4E /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				A1B000000000000000000002 /* Connect Reviews Widget.appex */,
+				A1B000000000000000000002 /* ConnectReviewsWidget.appex */,
 				F162B6322F42909B00906C4E /* Connect Reviews.app */,
 			);
 			name = Products;
@@ -110,7 +123,7 @@
 			packageProductDependencies = (
 			);
 			productName = "Connect Reviews Widget";
-			productReference = A1B000000000000000000002 /* Connect Reviews Widget.appex */;
+			productReference = A1B000000000000000000002 /* ConnectReviewsWidget.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
 		F162B6312F42909B00906C4E /* Connect Reviews */ = {
@@ -239,7 +252,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 26.2;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = studio.cuatro.connect.widget;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = ConnectReviewsWidget;
 				REGISTER_APP_GROUPS = YES;
 				SKIP_INSTALL = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -269,7 +282,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 26.2;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = studio.cuatro.connect.widget;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = ConnectReviewsWidget;
 				REGISTER_APP_GROUPS = YES;
 				SKIP_INSTALL = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
