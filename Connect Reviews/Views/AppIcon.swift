@@ -78,7 +78,10 @@ private final class AppIconLoader: ObservableObject {
                 return
             }
 
-            let processed = decoded.croppingTransparentPadding() ?? decoded
+            let processed =
+                decoded.croppingTransparentPadding(alphaThreshold: 24) ??
+                decoded.croppingTransparentPadding(alphaThreshold: 2) ??
+                decoded
             Self.cache.setObject(processed, forKey: url as NSURL)
             image = processed
         } catch {
@@ -145,6 +148,62 @@ private extension CGImage {
         }
 
         guard maxX >= minX, maxY >= minY else { return self }
+
+        let edgeTrimThreshold = UInt8(max(Int(alphaThreshold), 28))
+        let minDimensionForTrim = 48
+
+        func rowOccupiedCount(y: Int, x0: Int, x1: Int) -> Int {
+            let rowOffset = y * bytesPerRow
+            var count = 0
+            for x in x0...x1 {
+                let alpha = pixels[rowOffset + (x * bytesPerPixel) + 3]
+                if alpha > edgeTrimThreshold {
+                    count += 1
+                }
+            }
+            return count
+        }
+
+        func columnOccupiedCount(x: Int, y0: Int, y1: Int) -> Int {
+            var count = 0
+            for y in y0...y1 {
+                let rowOffset = y * bytesPerRow
+                let alpha = pixels[rowOffset + (x * bytesPerPixel) + 3]
+                if alpha > edgeTrimThreshold {
+                    count += 1
+                }
+            }
+            return count
+        }
+
+        while (maxX - minX + 1) > minDimensionForTrim && (maxY - minY + 1) > minDimensionForTrim {
+            let widthSpan = maxX - minX + 1
+            let heightSpan = maxY - minY + 1
+            let minRowCoverage = max(2, Int(Double(widthSpan) * 0.04))
+            let minColumnCoverage = max(2, Int(Double(heightSpan) * 0.04))
+            var trimmed = false
+
+            if rowOccupiedCount(y: minY, x0: minX, x1: maxX) < minRowCoverage {
+                minY += 1
+                trimmed = true
+            }
+            if rowOccupiedCount(y: maxY, x0: minX, x1: maxX) < minRowCoverage {
+                maxY -= 1
+                trimmed = true
+            }
+            if columnOccupiedCount(x: minX, y0: minY, y1: maxY) < minColumnCoverage {
+                minX += 1
+                trimmed = true
+            }
+            if columnOccupiedCount(x: maxX, y0: minY, y1: maxY) < minColumnCoverage {
+                maxX -= 1
+                trimmed = true
+            }
+
+            if !trimmed || minX >= maxX || minY >= maxY {
+                break
+            }
+        }
 
         var cropRect = CGRect(
             x: minX,
