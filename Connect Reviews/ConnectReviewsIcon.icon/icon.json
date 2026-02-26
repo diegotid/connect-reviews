@@ -1,0 +1,35 @@
+{
+  "fill" : {
+    "linear-gradient" : [
+      "srgb:0.98039,0.98824,0.99216,1.00000",
+      "srgb:0.90588,0.91373,0.91765,1.00000"
+    ]
+  },
+  "groups" : [
+    {
+      "hidden" : false,
+      "layers" : [
+        {
+          "glass" : false,
+          "hidden" : false,
+          "image-name" : "ConnectReviews.png",
+          "name" : "ConnectReviews"
+        }
+      ],
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.5
+      },
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.5
+      }
+    }
+  ],
+  "supported-platforms" : {
+    "circles" : [
+      "watchOS"
+    ],
+    "squares" : "shared"
+  }
+}

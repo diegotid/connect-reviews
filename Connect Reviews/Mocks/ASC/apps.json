@@ -1,0 +1,31 @@
+{
+  "data": [
+    {
+      "id": "6756281636",
+      "type": "apps",
+      "attributes": {
+        "name": "Better Clipboard",
+        "bundleId": "studio.cuatro.better-clipboard"
+      }
+    },
+    {
+      "id": "6473126292",
+      "type": "apps",
+      "attributes": {
+        "name": "Tildone Sticky To Dos",
+        "bundleId": "studio.cuatro.tildone"
+      }
+    },
+    {
+      "id": "6754349400",
+      "type": "apps",
+      "attributes": {
+        "name": "Week Number Widgets",
+        "bundleId": "studio.cuatro.week-number-widgets"
+      }
+    }
+  ],
+  "links": {
+    "self": "https://api.appstoreconnect.apple.com/v1/apps?limit=200&fields[apps]=name,bundleId"
+  }
+}

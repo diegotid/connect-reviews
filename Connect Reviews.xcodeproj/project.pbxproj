@@ -35,15 +35,22 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		A1B000000000000000000002 /* ConnectReviewsWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "ConnectReviewsWidget.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
+		A1B000000000000000000002 /* ConnectReviewsWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ConnectReviewsWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		F162B6322F42909B00906C4E /* Connect Reviews.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Connect Reviews.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		A1B00000000000000000000E /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+		A1B00000000000000000000E /* Exceptions for "Connect Reviews Widget" folder in "Connect Reviews Widget" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
+			);
+			target = A1B000000000000000000008 /* Connect Reviews Widget */;
+		};
+		F1BFD8842F4FB3BD00594553 /* Exceptions for "Connect Reviews" folder in "Connect Reviews Widget" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				ConnectReviewsIcon.icon,
 			);
 			target = A1B000000000000000000008 /* Connect Reviews Widget */;
 		};
@@ -53,13 +60,16 @@
 		A1B000000000000000000003 /* Connect Reviews Widget */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				A1B00000000000000000000E /* PBXFileSystemSynchronizedBuildFileExceptionSet */,
+				A1B00000000000000000000E /* Exceptions for "Connect Reviews Widget" folder in "Connect Reviews Widget" target */,
 			);
 			path = "Connect Reviews Widget";
 			sourceTree = "<group>";
 		};
 		F162B6342F42909B00906C4E /* Connect Reviews */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				F1BFD8842F4FB3BD00594553 /* Exceptions for "Connect Reviews" folder in "Connect Reviews Widget" target */,
+			);
 			path = "Connect Reviews";
 			sourceTree = "<group>";
 		};
@@ -237,7 +247,7 @@
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CODE_SIGN_ENTITLEMENTS = "Connect Reviews Widget/Connect Reviews Widget.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = F6HFAVTS49;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -267,7 +277,7 @@
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CODE_SIGN_ENTITLEMENTS = "Connect Reviews Widget/Connect Reviews Widget.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = F6HFAVTS49;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -414,12 +424,12 @@
 		F162B63E2F42909C00906C4E /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = ConnectReviewsIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "Connect Reviews/Connect Reviews.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = F6HFAVTS49;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -449,12 +459,12 @@
 		F162B63F2F42909C00906C4E /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = ConnectReviewsIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "Connect Reviews/Connect Reviews.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = F6HFAVTS49;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;

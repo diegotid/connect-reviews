@@ -1,0 +1,117 @@
+{
+  "data": [
+    {
+      "id": "td-001",
+      "type": "customerReviews",
+      "attributes": {
+        "rating": 5,
+        "title": "Tasks always visible",
+        "body": "This is exactly what I wanted for daily planning on my Mac. I open the computer and instantly see what I need to do without opening a heavy task manager. It keeps me focused and reduces friction in the morning.",
+        "reviewerNickname": "SaraP",
+        "territory": "US",
+        "createdDate": "2026-02-03T08:11:00Z"
+      }
+    },
+    {
+      "id": "td-002",
+      "type": "customerReviews",
+      "attributes": {
+        "rating": 4,
+        "title": "Simple and focused",
+        "body": "The interface is clean and free of distractions, which helps me stay focused. I use it for small daily tasks and quick reminders during meetings. It is simple, fast, and easy to maintain throughout the day.",
+        "reviewerNickname": "JonM",
+        "territory": "AU",
+        "createdDate": "2026-01-24T16:40:00Z"
+      }
+    },
+    {
+      "id": "td-003",
+      "type": "customerReviews",
+      "attributes": {
+        "rating": 5,
+        "title": "Replaced my sticky notes",
+        "body": "I used to keep paper notes all around my desk, and this replaced that habit completely. It is faster to capture a thought and easier to keep everything in one place. My desk is cleaner and my tasks are clearer now.",
+        "reviewerNickname": "ClaraL",
+        "territory": "ES",
+        "createdDate": "2026-01-16T10:09:00Z"
+      }
+    },
+    {
+      "id": "td-004",
+      "type": "customerReviews",
+      "attributes": {
+        "rating": 4,
+        "title": "Great for work checklists",
+        "body": "I use it for support follow-ups, quick reminders, and small action lists between calls. The app feels stable and lightweight even when my day gets busy, and I can keep my priorities visible without opening another full task manager.\n\nTypical list for my mornings:\n- Follow up with customer tickets\n- Prepare notes for standup\n- Track one personal task for the day\n\nMore color options or themes would make it even better.",
+        "reviewerNickname": "RubenK",
+        "territory": "NL",
+        "createdDate": "2026-01-07T12:58:00Z"
+      }
+    },
+    {
+      "id": "td-005",
+      "type": "customerReviews",
+      "attributes": {
+        "rating": 3,
+        "title": "Good, but I want recurring tasks",
+        "body": "It is very good for quick todos and spontaneous reminders that pop up during work. The simplicity is a strength, especially when I need to capture something in a few seconds and keep moving. For my workflow, recurring items would make it much stronger for weekly routines, but even now it handles the essentials very well.",
+        "reviewerNickname": "BeaNorth",
+        "territory": "FR",
+        "createdDate": "2025-12-18T20:22:00Z"
+      }
+    }
+  ],
+  "included": [
+    {
+      "id": "td-rating-us",
+      "type": "customerReviewResponses",
+      "attributes": {
+        "territory": "US",
+        "territoryCode": "US",
+        "userRating": {
+          "ratingCount": 301,
+          "value": 4.7
+        }
+      }
+    },
+    {
+      "id": "td-rating-au",
+      "type": "customerReviewResponses",
+      "attributes": {
+        "territory": "AU",
+        "territoryCode": "AU",
+        "userRating": {
+          "ratingCount": 188,
+          "value": 4.6
+        }
+      }
+    },
+    {
+      "id": "td-rating-es",
+      "type": "customerReviewResponses",
+      "attributes": {
+        "territory": "ES",
+        "territoryCode": "ES",
+        "userRating": {
+          "ratingCount": 146,
+          "value": 4.5
+        }
+      }
+    },
+    {
+      "id": "td-rating-fr",
+      "type": "customerReviewResponses",
+      "attributes": {
+        "territory": "FR",
+        "territoryCode": "FR",
+        "userRating": {
+          "ratingCount": 101,
+          "value": 4.4
+        }
+      }
+    }
+  ],
+  "links": {
+    "self": "https://api.appstoreconnect.apple.com/v1/apps/6473126292/customerReviews?limit=200&sort=-createdDate"
+  }
+}

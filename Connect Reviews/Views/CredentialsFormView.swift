@@ -86,4 +86,12 @@ struct CredentialsFormView: View {
         .padding(20)
         .frame(minWidth: 640, minHeight: 520)
     }
+
+    private func fillAppleReviewCredentials() {
+        let demo = AppStoreConnectCredentials.appleReviewDemo
+        issuerID = demo.issuerID
+        keyID = demo.keyID
+        privateKeyPEM = demo.privateKeyPEM
+        validationMessage = nil
+    }
 }

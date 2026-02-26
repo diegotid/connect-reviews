@@ -1,0 +1,14 @@
+{
+  "data": [
+    {
+      "id": "wn-version-1",
+      "type": "appStoreVersions",
+      "attributes": {
+        "appStoreState": "READY_FOR_SALE"
+      }
+    }
+  ],
+  "links": {
+    "self": "https://api.appstoreconnect.apple.com/v1/apps/6754349400/appStoreVersions"
+  }
+}

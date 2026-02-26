@@ -15,6 +15,44 @@ struct AppStoreConnectCredentials: Codable, Equatable {
     let privateKeyPEM: String
 }
 
+enum AppleReviewDemoAccount {
+    static let credentials = AppStoreConnectCredentials(
+        issuerID: "00000000-0000-0000-0000-000000000000",
+        keyID: "RVWDEMO001",
+        privateKeyPEM: """
+        -----BEGIN PRIVATE KEY-----
+        APPLE_REVIEW_DEMO_PRIVATE_KEY
+        -----END PRIVATE KEY-----
+        """
+    )
+}
+
+extension AppStoreConnectCredentials {
+    static var appleReviewDemo: AppStoreConnectCredentials {
+        AppleReviewDemoAccount.credentials
+    }
+
+    var isAppleReviewDemoAccount: Bool {
+        normalizedIssuerID.caseInsensitiveCompare(Self.appleReviewDemo.normalizedIssuerID) == .orderedSame &&
+        normalizedKeyID.caseInsensitiveCompare(Self.appleReviewDemo.normalizedKeyID) == .orderedSame &&
+        normalizedPrivateKeyPEM == Self.appleReviewDemo.normalizedPrivateKeyPEM
+    }
+
+    private var normalizedIssuerID: String {
+        issuerID.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private var normalizedKeyID: String {
+        keyID.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private var normalizedPrivateKeyPEM: String {
+        privateKeyPEM
+            .replacingOccurrences(of: "\\n", with: "\n")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+}
+
 @MainActor
 final class CredentialsStore: ObservableObject {
     @Published private(set) var credentials: AppStoreConnectCredentials?

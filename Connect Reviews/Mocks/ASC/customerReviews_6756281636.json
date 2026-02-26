@@ -1,0 +1,117 @@
+{
+  "data": [
+    {
+      "id": "bc-001",
+      "type": "customerReviews",
+      "attributes": {
+        "rating": 5,
+        "title": "Copy and paste without losing context",
+        "body": "I switch between documents all day, and this made clipboard history actually usable in real work. The app feels fast and reliable even after long sessions, and search helps me recover snippets in seconds.\n\nWhat I use it for most:\n- Saving repeated support replies\n- Reusing links and template text\n- Recovering copied content I thought I lost\n\nIt removed a lot of small interruptions from my workflow.",
+        "reviewerNickname": "NateR",
+        "territory": "US",
+        "createdDate": "2026-01-28T09:14:00Z"
+      }
+    },
+    {
+      "id": "bc-002",
+      "type": "customerReviews",
+      "attributes": {
+        "rating": 4,
+        "title": "Great for snippets",
+        "body": "I save repeated replies and links here, and it has become part of my daily workflow. The app is quick enough that I do not think about it anymore, which is exactly what I wanted from a clipboard tool. I would still love more control for organizing favorites and pinned snippets by project.\n\nEven with that, it already saves me a noticeable amount of time every day.",
+        "reviewerNickname": "MiaCodes",
+        "territory": "GB",
+        "createdDate": "2026-01-19T14:36:00Z"
+      }
+    },
+    {
+      "id": "bc-003",
+      "type": "customerReviews",
+      "attributes": {
+        "rating": 5,
+        "title": "Lightweight and stable",
+        "body": "I installed it to test for a day and ended up keeping it permanently. There is no lag, no clutter, and everything feels responsive even with frequent copy and paste actions. It does exactly what I need without getting in the way.",
+        "reviewerNickname": "AlexPM",
+        "territory": "ES",
+        "createdDate": "2026-01-11T11:02:00Z"
+      }
+    },
+    {
+      "id": "bc-004",
+      "type": "customerReviews",
+      "attributes": {
+        "rating": 4,
+        "title": "Search is the killer feature",
+        "body": "The search feature is the main reason I kept this app. I can find copied text in seconds instead of recopying everything across different apps. It is practical, stable, and surprisingly useful in daily work.",
+        "reviewerNickname": "MarinaV",
+        "territory": "DE",
+        "createdDate": "2025-12-30T18:25:00Z"
+      }
+    },
+    {
+      "id": "bc-005",
+      "type": "customerReviews",
+      "attributes": {
+        "rating": 3,
+        "title": "Solid base, needs more hotkeys",
+        "body": "This is a good app overall and the core experience already feels useful. I would like more custom keyboard shortcuts and maybe a little more control over categories. If that improves, this could easily become a five-star tool for me.",
+        "reviewerNickname": "OwenT",
+        "territory": "CA",
+        "createdDate": "2025-12-12T07:48:00Z"
+      }
+    }
+  ],
+  "included": [
+    {
+      "id": "bc-rating-us",
+      "type": "customerReviewResponses",
+      "attributes": {
+        "territory": "US",
+        "territoryCode": "US",
+        "userRating": {
+          "ratingCount": 520,
+          "value": 4.9
+        }
+      }
+    },
+    {
+      "id": "bc-rating-gb",
+      "type": "customerReviewResponses",
+      "attributes": {
+        "territory": "GB",
+        "territoryCode": "GB",
+        "userRating": {
+          "ratingCount": 360,
+          "value": 4.8
+        }
+      }
+    },
+    {
+      "id": "bc-rating-es",
+      "type": "customerReviewResponses",
+      "attributes": {
+        "territory": "ES",
+        "territoryCode": "ES",
+        "userRating": {
+          "ratingCount": 210,
+          "value": 4.7
+        }
+      }
+    },
+    {
+      "id": "bc-rating-de",
+      "type": "customerReviewResponses",
+      "attributes": {
+        "territory": "DE",
+        "territoryCode": "DE",
+        "userRating": {
+          "ratingCount": 153,
+          "value": 4.6
+        }
+      }
+    }
+  ],
+  "links": {
+    "self": "https://api.appstoreconnect.apple.com/v1/apps/6756281636/customerReviews?limit=200&sort=-createdDate"
+  }
+}

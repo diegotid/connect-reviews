@@ -67,13 +67,23 @@ private final class AppIconLoader: ObservableObject {
         image = nil
 
         do {
-            let (data, response) = try await URLSession.shared.data(from: url)
-            guard !Task.isCancelled else { return }
-            guard
-                let http = response as? HTTPURLResponse,
-                (200...299).contains(http.statusCode),
-                let decoded = NSImage(data: data)
-            else {
+            let data: Data
+            if url.isFileURL {
+                data = try Data(contentsOf: url)
+            } else {
+                let (remoteData, response) = try await URLSession.shared.data(from: url)
+                guard !Task.isCancelled else { return }
+                guard
+                    let http = response as? HTTPURLResponse,
+                    (200...299).contains(http.statusCode)
+                else {
+                    image = nil
+                    return
+                }
+                data = remoteData
+            }
+
+            guard let decoded = NSImage(data: data) else {
                 image = nil
                 return
             }
