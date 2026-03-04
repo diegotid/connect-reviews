@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		A1B000000000000000000001 /* ConnectReviewsWidget.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = A1B000000000000000000002 /* ConnectReviewsWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		F19E7BBC2F57AF36002FA4C1 /* LoadedWidgetApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F19E7BBA2F57AF2C002FA4C1 /* LoadedWidgetApp.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -37,6 +38,7 @@
 /* Begin PBXFileReference section */
 		A1B000000000000000000002 /* ConnectReviewsWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ConnectReviewsWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		F162B6322F42909B00906C4E /* Connect Reviews.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Connect Reviews.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		F19E7BBA2F57AF2C002FA4C1 /* LoadedWidgetApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadedWidgetApp.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -44,8 +46,16 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
+				Models/WidgetITunesMetadataResult.swift,
 			);
 			target = A1B000000000000000000008 /* Connect Reviews Widget */;
+		};
+		F19E7BA72F57A81F002FA4C1 /* Exceptions for "Connect Reviews Widget" folder in "Connect Reviews" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Models/WidgetITunesMetadataResult.swift,
+			);
+			target = F162B6312F42909B00906C4E /* Connect Reviews */;
 		};
 		F1BFD8842F4FB3BD00594553 /* Exceptions for "Connect Reviews" folder in "Connect Reviews Widget" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
@@ -61,6 +71,7 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				A1B00000000000000000000E /* Exceptions for "Connect Reviews Widget" folder in "Connect Reviews Widget" target */,
+				F19E7BA72F57A81F002FA4C1 /* Exceptions for "Connect Reviews Widget" folder in "Connect Reviews" target */,
 			);
 			path = "Connect Reviews Widget";
 			sourceTree = "<group>";
@@ -99,6 +110,7 @@
 				A1B000000000000000000003 /* Connect Reviews Widget */,
 				F162B6342F42909B00906C4E /* Connect Reviews */,
 				F162B6332F42909B00906C4E /* Products */,
+				F19E7BBA2F57AF2C002FA4C1 /* LoadedWidgetApp.swift */,
 			);
 			sourceTree = "<group>";
 		};
@@ -220,6 +232,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F19E7BBC2F57AF36002FA4C1 /* LoadedWidgetApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -247,9 +260,10 @@
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CODE_SIGN_ENTITLEMENTS = "Connect Reviews Widget/Connect Reviews Widget.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = F6HFAVTS49;
 				ENABLE_APP_SANDBOX = YES;
+				ENABLE_DEBUG_DYLIB = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = "Connect Reviews Widget/Info.plist";
@@ -277,9 +291,10 @@
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CODE_SIGN_ENTITLEMENTS = "Connect Reviews Widget/Connect Reviews Widget.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = F6HFAVTS49;
 				ENABLE_APP_SANDBOX = YES;
+				ENABLE_DEBUG_DYLIB = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = "Connect Reviews Widget/Info.plist";
@@ -298,6 +313,7 @@
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
+				WIDGET_HOST_BUNDLE_IDENTIFIER = studio.cuatro.connect;
 			};
 			name = Release;
 		};
@@ -429,7 +445,7 @@
 				CODE_SIGN_ENTITLEMENTS = "Connect Reviews/Connect Reviews.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = F6HFAVTS49;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -464,7 +480,7 @@
 				CODE_SIGN_ENTITLEMENTS = "Connect Reviews/Connect Reviews.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = F6HFAVTS49;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
