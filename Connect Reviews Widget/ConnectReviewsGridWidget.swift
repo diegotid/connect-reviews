@@ -26,8 +26,8 @@ struct ConnectReviewsGridWidgetView: View {
     let entry: ConnectReviewsRatingsWidgetEntry
 
     private let columns = [
-        GridItem(.flexible(), spacing: 8),
-        GridItem(.flexible(), spacing: 8)
+        GridItem(.fixed(72), spacing: 6),
+        GridItem(.fixed(72), spacing: 6)
     ]
 
     private var displayedApps: [ConnectReviewsApplication] {
@@ -43,7 +43,7 @@ struct ConnectReviewsGridWidgetView: View {
                     .lineLimit(3)
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             } else {
-                LazyVGrid(columns: columns, spacing: 8) {
+                LazyVGrid(columns: columns, spacing: 40) {
                     ForEach(displayedApps) { app in
                         ConnectReviewsGridCell(app: app)
                     }
@@ -57,7 +57,6 @@ struct ConnectReviewsGridWidgetView: View {
                 }
             }
         }
-        .padding(4)
         .containerBackground(.fill.tertiary, for: .widget)
     }
 }

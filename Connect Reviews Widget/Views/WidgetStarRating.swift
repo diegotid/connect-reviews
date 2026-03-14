@@ -10,8 +10,21 @@ import Foundation
 
 struct WidgetStarRating: View {
     let rating: Double
-    let ratingCount: Int?
     let size: CGFloat
+    let ratingCount: Int?
+    let showRating: Bool
+    
+    init(
+        rating: Double,
+        size: CGFloat,
+        ratingCount: Int? = nil,
+        showRating: Bool = true
+    ) {
+        self.rating = rating
+        self.size = size
+        self.ratingCount = ratingCount
+        self.showRating = showRating
+    }
 
     private var clampedRating: Double {
         min(max(rating, 0), 5)
@@ -23,11 +36,14 @@ struct WidgetStarRating: View {
 
     var body: some View {
         HStack(spacing: 2) {
-            Text(String(format: "%.1f", rating))
-                .bold()
-                .foregroundStyle(.secondary)
-                .font(.system(size: size * 1.3))
-                .padding(.trailing, size / 4)
+            if showRating {
+                Text(String(format: "%.1f", rating))
+                    .bold()
+                    .foregroundStyle(.secondary)
+                    .font(.system(size: size * 1.3))
+                    .padding(.trailing, size / 4)
+            }
+            
             ForEach(0..<5, id: \.self) { index in
                 let value = starValue(at: index)
                 ZStack {
@@ -37,6 +53,7 @@ struct WidgetStarRating: View {
                         .foregroundStyle(.yellow.opacity(value * 0.5))
                 }
             }
+            
             if let ratingCount {
                 Text("(\(ratingCount))")
                     .font(.system(size: size * 1.25, weight: .light))

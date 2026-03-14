@@ -10,14 +10,15 @@ import SwiftUI
 
 struct ConnectReviewsRatingsWidget: Widget {
     var body: some WidgetConfiguration {
-        StaticConfiguration(
+        AppIntentConfiguration(
             kind: ConnectReviewsWidgetConstants.kind,
-            provider: ConnectReviewsWidgetProvider()
+            intent: ConnectReviewsRatingsWidgetIntent.self,
+            provider: ConnectReviewsRatingsWidgetProvider()
         ) { entry in
             ConnectReviewsRatingsWidgetView(entry: entry)
         }
         .configurationDisplayName("Connect Reviews")
-        .description("Shows Ready for Sale apps and their average ratings.")
+        .description("Shows the average ratings for three selected Ready for Sale apps.")
         .supportedFamilies([.systemSmall])
     }
 }
@@ -34,7 +35,7 @@ struct ConnectReviewsRatingsWidgetView: View {
                     .lineLimit(3)
             } else {
                 VStack(alignment: .leading, spacing: 12) {
-                    ForEach(entry.apps.prefix(3)) { app in
+                    ForEach(entry.apps) { app in
                         VStack(alignment: .leading, spacing: 1) {
                             Text(app.name)
                                 .lineLimit(1)
@@ -42,8 +43,8 @@ struct ConnectReviewsRatingsWidgetView: View {
                             if let averageRating = app.averageRating {
                                 WidgetStarRating(
                                     rating: averageRating,
-                                    ratingCount: app.totalRatingsCount,
-                                    size: 9
+                                    size: 9,
+                                    ratingCount: app.totalRatingsCount
                                 )
                             } else {
                                 Text("No rating")
