@@ -23,4 +23,11 @@ enum ConnectReviewsWidgetConstants {
         "HU", "IE", "IT", "LV", "LT", "LU", "MT", "NL", "PL", "PT", "RO", "SK",
         "SI", "ES", "SE"
     ]
+
+    static func sharedDefaults() -> UserDefaults? {
+        guard FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroupIdentifier) != nil else {
+            return nil
+        }
+        return UserDefaults(suiteName: appGroupIdentifier)
+    }
 }

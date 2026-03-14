@@ -9,7 +9,7 @@ import Foundation
 
 enum WidgetCredentialsLoader {
     static func load() throws -> WidgetAppStoreConnectCredentials {
-        guard let defaults = UserDefaults(suiteName: ConnectReviewsWidgetConstants.appGroupIdentifier) else {
+        guard let defaults = ConnectReviewsWidgetConstants.sharedDefaults() else {
             throw WidgetDataError.invalidCredentials("Unable to access shared app group credentials.")
         }
         guard let data = defaults.data(forKey: ConnectReviewsWidgetConstants.credentialsStorageKey) else {

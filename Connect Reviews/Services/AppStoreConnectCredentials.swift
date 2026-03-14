@@ -7,6 +7,13 @@ import WidgetKit
 enum SharedCredentialsConfig {
     static let appGroupIdentifier = "group.studio.cuatro.connect"
     static let storageKey = "app_store_connect_credentials_v1"
+
+    static func sharedDefaults() -> UserDefaults? {
+        guard FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroupIdentifier) != nil else {
+            return nil
+        }
+        return UserDefaults(suiteName: appGroupIdentifier)
+    }
 }
 
 struct AppStoreConnectCredentials: Codable, Equatable {
@@ -65,7 +72,7 @@ final class CredentialsStore: ObservableObject {
     private let usesAppGroupDefaults: Bool
 
     init() {
-        let appGroupDefaults = UserDefaults(suiteName: SharedCredentialsConfig.appGroupIdentifier)
+        let appGroupDefaults = SharedCredentialsConfig.sharedDefaults()
         self.defaults = appGroupDefaults ?? .standard
         self.legacyDefaults = .standard
         self.usesAppGroupDefaults = appGroupDefaults != nil
